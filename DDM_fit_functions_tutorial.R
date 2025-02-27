@@ -9,16 +9,54 @@ Cost_ddm <- function(obs_RT, obs_acc, pred_RT, pred_acc){
   quantiles_cor <- quantile(obs_RT[obs_acc == 1], probs = c(.1,.3,.5,.7,.9), names = FALSE)
   quantiles_incor <- quantile(obs_RT[obs_acc == 0], probs = c(.1,.3,.5,.7,.9), names = FALSE)
 
-  # plot dists & quantiles, ask question
+  par(mfrow = c(2,1))
+  # plot the distributions of correct and incorrect observations and add the quantiles
+  hist(obs_RT[obs_acc == 1],
+       prob = F, col = "green",
+       breaks = 50,
+       xlab="Reaction time", ylab="Occurence",)
+  abline(v = quantiles_cor, col = "green")
+  hist(obs_RT[obs_acc == 0], , add=TRUE,
+       prob = F, col = "red",
+       breaks = 50)
+  abline(v = quantiles_incor, col = "red")
   
-  # get proportion of responses within these quantiles for observed and predicted
+  # Q12 are the quantiles different for the correct and incorrect trials? Why 
+  # do you think so?
+  
+  # now we use the same quantiles but instead of plotting the observed data, we 
+  # plot the predicted data we made from our set of parameters.
+  
+  hist(pred_RT[pred_acc == 1],
+       prob = F, col = "green",
+       breaks = 50,
+       xlab="Reaction time", ylab="Occurence",)
+  abline(v = quantiles_cor, col = "green")
+  hist(pred_RT[pred_acc == 0], , add=TRUE,
+       prob = F, col = "red",
+       breaks = 50)
+  abline(v = quantiles_incor, col = "red")
+  
+  par(mfrow = c(1,1))
+  
+  # Q13 compare the histogram with the observed data to the histogram with the 
+  # predicted data. Does the same proportion of trials fall within the quantiles
+  # for both sets of data? If not, how are they different?
+  
+  # now we will compute the number of responses that fall within the quantiles
+  # for both observed and predicted data.
+  
+  # for observed data
   C_prob <- ecdf(obs_RT[obs_acc == 1]) # get cumulative probability distribution
   obs_prop_cor <- diff(c(0,C_prob(quantiles_cor),1)) * length(obs_RT[obs_acc == 1]) # sample proportion of probability distribution within quantiles
 
   C_prob <- ecdf(obs_RT[obs_acc == 0]) # same for observed incorrect
   obs_prop_incor <- diff(c(0,C_prob(quantiles_cor),1)) * length(obs_RT[obs_acc == 0])
 
-  # same for predicted RTs
+  # for predicted data (note that because these data are generated, we sometimes 
+  # have very little (in)correct trials, which we have to account for by setting 
+  # the proportion to zero. Hence, the if statements)
+  
   if(sum(pred_acc == 1) > 5){ 
 
   C_prob <- ecdf(pred_RT[pred_acc == 1])
@@ -34,16 +72,27 @@ Cost_ddm <- function(obs_RT, obs_acc, pred_RT, pred_acc){
   else{ # less than 5 errors: no quantiles possible
     pred_prop_incor <- c(0,0,0,0,0)}
   
-
-  # get chi-square measure as cost
-  
   # change 0 proportions to very small number to prevent Inf output
   pred_prop_cor[pred_prop_cor == 0] <- 0.0001
   pred_prop_incor[pred_prop_incor == 0] <- 0.0001
   
+  # Q14 compare obs_prop_cor to pred_prop_cor, which quantile has the highest 
+  # number of trials for both?
+  obs_prop_cor
+  pred_prop_cor
+  
+  # we can see that the number of trials is not equal for the observed and 
+  # predicted data, but how can we quantify how much they differ? For this,
+  # we compute the chi-square, as below:
+
+  # get chi-square measure as cost
+  
   # compute chi square using both correct and incorrect trials
   Chi_square <- sum(c((obs_prop_cor - pred_prop_cor)^2 / pred_prop_cor, (obs_prop_incor - pred_prop_incor)^2 / pred_prop_incor), na.rm=TRUE)
 
+  # Q15 how would the chi-square change if the number of (in)correct trials in 
+  # a quantile become more similar?
+  
   return(Chi_square)
 }
 

@@ -175,6 +175,7 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
        legend=c("Correct trials","Incorrect trials"),
        col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
 
+par(mfrow = c(1,1))
 
 ## Q7 what happens to the DVs when you make the boundary higher?
 
@@ -193,13 +194,22 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
 # data we collected from participants, we need a way to quantify the difference 
 # between the distributions from generated and collected data.
 
-# look at function and answer questions
+## have a look at the function "Cost_ddm" inside DDM_fit_functions_tutorial.R
+# and answer the questions.
 
-## have a look at the function "Cost_ddm" inside DDM_fit_functions.R
-# this script computes 4 quantiles (containing a proportion of 0.1, 0.3, 0.5, 
+# make the input variables to the function
+Pred_Data <-DDM_3params(0.9,0.6,0.3); # we predict the data is well described by these parameters
+obs_RT <- Gen_Data$Data[ ,1]
+obs_acc <- Gen_Data$Data[ ,2]
+pred_RT <- Pred_Data$Data[ ,1]
+pred_acc <- Pred_Data$Data[ ,2]
+
+# now run the function Cost_ddm line by line
+
+# this script computes 5 quantiles (containing a proportion of 0.1, 0.3, 0.5, 
 # 0.7 and 0.9 of reaction times) in the observed data and  then computes the 
 # probability of both a correct and incorrect choice within these quantiles.
-# The cost (or chi square) is then computed as follows:
+# The cost (or chi square) is then computed on line 45:
 
 # (obs_prop_cor - pred_prop_cor)^2 / pred_prop_cor + (obs_prop_incor - pred_prop_incor)^2 / pred_prop_incor
 
@@ -211,6 +221,8 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
 # variability. Psychonomic Bulletin & Review, 9(3), 438–481. 
 # https://doi.org/10.3758/BF03196302
 
+
+#------------------------------------------------------------------------------#
 # to illustrate the use of the cost function, we will now create some "observed"
 # data with known parameters and compare it to estimated data with the same or 
 # different parameters.
