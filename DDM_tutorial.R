@@ -46,8 +46,8 @@ ter<-0.4 #non-decision time (seconds)
 # on line 54, you can see the formula used for evidence accumulation:
 # evidence = evidence + v * dt + s * sqrt(dt) * zigg.norm()
 
-# evidence is being added to at every timestep (dt) with magnitude v. Some noise 
-# is also added to this accumulation.
+# evidence is being added to the DV at every timestep (dt) with magnitude v. 
+# Some noise is also added with magnitude s (fixed at 1).
 
 ## Let's now use the .cpp function to generate some data
 Gen_Data<-DDM_3params(v,a,ter)
@@ -69,62 +69,34 @@ str(Gen_Data)
 # now we would like to plot a couple of decision variables to see how a choice 
 # is being made on a single trial
 
-# set this to the trials you would like to plot, note that we only keep the DVs of the first 21 trials to save memory
+# set this to the trials you would like to plot, note that we only keep the DVs 
+# of the first 21 trials to save memory.
 trials_toplot = c(3,4,7,15,18)
 
 # plot those trials and the boundary values
-plot(t(Gen_Data$time[trials_toplot, ]), t(Gen_Data$DVs[trials_toplot, ]), type ="l")
+plot(t(Gen_Data$time[trials_toplot, ]), t(Gen_Data$DVs[trials_toplot, ]), type ="l", 
+     ylim = c(-a-0.1,a+0.1), xlab = 'Time (s)', ylab = 'Decision variable')
 abline(h = a, col = "red")
 abline(h = -a, col = "red")
 
-#------------------------------------------------------------------------------#
-# now try and change some parameter values and consider their effect on the DVs.
-# you can adapt the parameter values and then run the block of code creating 
-# trials and plotting the DVs
+# Q1 why does the DV start with a flat line before accumulation?
 
-# usually in experiments, we find parameter values in this range:
-# drift rate: 0 - 2
-# boundary: 0.25 - 4
-# non-decision time: 0 - 1
+# Q2 what does each DV have in common? When do they stop accumulating?
 
-# change here
-v<-0.3 #drift rate
-a<-0.5 #bound
-ter<-0.4 #non-decision time
+# Q3 can you deduce for how many of these trials the choice was correct?
 
-# run here
-Try_Data<-DDM_3params(v,a,ter)
-Try_Data$DVs[Try_Data$Dvs == 0] <- NA
-Try_Data$time[Try_Data$time == 0] <- NA
-Try_Data$time[ ,1] = 0
-
-trials_toplot = c(1,2,3,4,7,11,21)
-plot(t(Try_Data$time[trials_toplot, ]), t(Try_Data$DVs[trials_toplot, ]), type ="l",
-xlab = 'Time (s)', ylab = 'Decision variable')
-abline(h = a, col = "red")
-abline(h = -a, col = "red")
-
-# add behaviour plot here
-
-## Q1 what happens to the DVs when you make the boundary higher?
-
-## Q2 how do you think that affects behaviour (reaction times and accuracy)?
-
-## Q3 what happens when you increase the drift rate while keeping the high boundary?
-
-## Q4 how do boundary and drift rate interact?
-
-## Q5 what happens if you decrease the non-decision time? How do you think that affects behaviour?
-
-## Q6 what happens if you choose a parameter value that's outside of the "normal
-# range"?
+# Q4 what was the (approximate) reaction time for each of the trials you plotted?
 
 #------------------------------------------------------------------------------#
-## Let's look at the behavioural outcomes of our simulations ##
+## plot behavioural results ##
+
+# when plotting the DVs, we can see a direct representation of the parameters on 
+# the decison being made on a single trial. But how do the parameters affect 
+# overall behaviour, such as accuracy or reaction time?
 
 # we are usually interested in the distribution of reaction times for the 
 # correct and incorrect choices. We use these distributions as a way to fit our 
-# predicted behaviour given some set of parameters to some actual participant behaviour
+# predicted behaviour given some set of parameters to actual participant behaviour.
 
 # let's look at the reaction time distributions of correct and incorrect choices.
 
@@ -149,32 +121,52 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
        legend=c("Correct trials","Incorrect trials"),
        col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
 
-## Q7 what do you notice about the number of trials that are correct and incorrect?
+## Q5 what do you notice about the number of trials that are correct and incorrect?
 
-## Q8 what do you notice about the reaction times on correct and incorrect trials?
+## Q6 what do you notice about the reaction times on correct and incorrect trials?
+
 
 #------------------------------------------------------------------------------#
-## now try and adapt some of the parameters and see what effect they have on 
-# the behaviour
+## playing around with the parameters ##
+
+# now try and change some parameter values and consider their effect on the DVs 
+# and behavioural results.
+# you can adapt the parameter values and then run the block of code creating 
+# trials and plotting the DVs and behavioural results
+
+# usually in experiments, we find parameter values in this range, so it's best 
+# to stay within them when changing the parameters:
+# drift rate: 0 - 2
+# boundary: 0.25 - 4
+# non-decision time: 0 - 1
 
 # change here
-v<-1.8 #drift rate
-a<-0.2 #bound
-ter<-0.9 #non-decision time
+v<-0.8 #drift rate
+a<-0.75 #bound
+ter<-0.4 #non-decision time
 
 # run here
 Try_Data<-DDM_3params(v,a,ter)
+Try_Data$DVs[Try_Data$Dvs == 0] <- NA
+Try_Data$time[Try_Data$time == 0] <- NA
+Try_Data$time[ ,1] = 0
 colnames(Try_Data$Data) <- c("RT", "accuracy")
+
+par(mfrow = c(1,2))
+trials_toplot = c(1,2,3,4,7,11,21)
+plot(t(Try_Data$time[trials_toplot, ]), t(Try_Data$DVs[trials_toplot, ]), type ="l",
+ylim = c(-a-0.1,a+0.1), xlab = 'Time (s)', ylab = 'Decision variable')
+abline(h = a, col = "red")
+abline(h = -a, col = "red")
+
 D <- data.frame(Try_Data$Data)
 D$accuracy <- as.factor(D$accuracy)
-correct_fill_color <- adjustcolor("#2A9D8F", alpha.f = 0.25)
-error_fill_color <- adjustcolor("#E76F51", alpha.f = 0.25)
-tempC <- hist(D$RT[D$accuracy == 1],
+hist(D$RT[D$accuracy == 1],
               prob = F, col = correct_fill_color,
               breaks = 50,
               xlab="Reaction time", ylab="Occurence",
               border = "white", main = "")
-tempE <- hist(D$RT[D$accuracy == 0], , add=TRUE,
+hist(D$RT[D$accuracy == 0], , add=TRUE,
               prob = F, col = error_fill_color,
               breaks = 50,
               border = "white", main = "")
@@ -182,6 +174,19 @@ tempE <- hist(D$RT[D$accuracy == 0], , add=TRUE,
 legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
        legend=c("Correct trials","Incorrect trials"),
        col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
+
+
+## Q7 what happens to the DVs when you make the boundary higher?
+
+## Q8 how does that affect behaviour (reaction times and accuracy)?
+
+## Q9 what happens when you increase the drift rate while keeping the high boundary?
+
+## Q10 what happens if you decrease the non-decision time? How does that affect behaviour?
+
+## Q11 what happens if you choose a parameter value that's outside of the "normal
+# range"?
+
 
 #------------------------------------------------------------------------------#
 ## if we'd like to compare data we predicted based on a set of parameters to 
@@ -216,10 +221,10 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
 cost_same <- vector()
 cost_diff <- vector()
 for(sim in 1:10){
-  Pred_Data <-DDM_3params(v,a,ter,ntrials); # generate data with same parameters, should be low cost
+  Pred_Data <-DDM_3params(v,a,ter); # generate data with same parameters, should be low cost
   cost_same[sim] <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2])
   
-  Pred_Data <-DDM_3params(v+(rnorm(1)/10),a+rnorm(1),ter+(rnorm(1)/10),ntrials); # generate data with different parameters, should be high cost
+  Pred_Data <-DDM_3params(v+(rnorm(1)/10),a+rnorm(1),ter+(rnorm(1)/10)); # generate data with different parameters, should be high cost
   cost_diff[sim] <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2])
 }
 
@@ -259,7 +264,7 @@ optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
                           lower = L,  
                           upper = U,
                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                          ntrials, Gen_Data$Data)
+                          Gen_Data$Data)
 
 ## look at the optimal parameters the fit function finds back:
 summary(optimal_params)
@@ -296,7 +301,7 @@ optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
                           lower = L,  
                           upper = U,
                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                          ntrials, ...)
+                          ...)
 
 # look at the optimal parameters to describe your data
 summary(optimal_params)
