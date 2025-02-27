@@ -197,6 +197,13 @@ par(mfrow = c(1,1))
 ## have a look at the function "Cost_ddm" inside DDM_fit_functions_tutorial.R
 # and answer the questions.
 
+# this script computes 5 quantiles (containing a proportion of 0.1, 0.3, 0.5, 
+# 0.7 and 0.9 of reaction times) in the observed data and  then computes the 
+# probability of both a correct and incorrect choice within these quantiles.
+# The cost (or chi square) is then computed on line 45:
+
+# (obs_prop_cor - pred_prop_cor)^2 / pred_prop_cor + (obs_prop_incor - pred_prop_incor)^2 / pred_prop_incor
+
 # make the input variables to the function
 Pred_Data <-DDM_3params(0.9,0.6,0.3); # we predict the data is well described by these parameters
 obs_RT <- Gen_Data$Data[ ,1]
@@ -206,13 +213,6 @@ pred_acc <- Pred_Data$Data[ ,2]
 
 # now run the function Cost_ddm line by line
 
-# this script computes 5 quantiles (containing a proportion of 0.1, 0.3, 0.5, 
-# 0.7 and 0.9 of reaction times) in the observed data and  then computes the 
-# probability of both a correct and incorrect choice within these quantiles.
-# The cost (or chi square) is then computed on line 45:
-
-# (obs_prop_cor - pred_prop_cor)^2 / pred_prop_cor + (obs_prop_incor - pred_prop_incor)^2 / pred_prop_incor
-
 # if you'd like to understand the cost function better, have a look at the 
 # Chi-Square Fitting Method described on page 9 of:
 
@@ -220,7 +220,6 @@ pred_acc <- Pred_Data$Data[ ,2]
 # model: Approaches to dealing with contaminant reaction times and parameter 
 # variability. Psychonomic Bulletin & Review, 9(3), 438–481. 
 # https://doi.org/10.3758/BF03196302
-
 
 #------------------------------------------------------------------------------#
 # to illustrate the use of the cost function, we will now create some "observed"

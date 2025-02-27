@@ -14,11 +14,11 @@ Cost_ddm <- function(obs_RT, obs_acc, pred_RT, pred_acc){
   hist(obs_RT[obs_acc == 1],
        prob = F, col = "green",
        breaks = 50,
-       xlab="Reaction time", ylab="Occurence",)
+       xlab="Reaction time", ylab="Occurence", main = "")
   abline(v = quantiles_cor, col = "green")
   hist(obs_RT[obs_acc == 0], , add=TRUE,
        prob = F, col = "red",
-       breaks = 50)
+       breaks = 50, main = "")
   abline(v = quantiles_incor, col = "red")
   
   # Q12 are the quantiles different for the correct and incorrect trials? Why 
@@ -30,11 +30,11 @@ Cost_ddm <- function(obs_RT, obs_acc, pred_RT, pred_acc){
   hist(pred_RT[pred_acc == 1],
        prob = F, col = "green",
        breaks = 50,
-       xlab="Reaction time", ylab="Occurence",)
+       xlab="Reaction time", ylab="Occurence",, main = "")
   abline(v = quantiles_cor, col = "green")
   hist(pred_RT[pred_acc == 0], , add=TRUE,
        prob = F, col = "red",
-       breaks = 50)
+       breaks = 50, main = "")
   abline(v = quantiles_incor, col = "red")
   
   par(mfrow = c(1,1))
