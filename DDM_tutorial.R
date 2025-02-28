@@ -125,7 +125,6 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
 
 ## Q6 what do you notice about the reaction times on correct and incorrect trials?
 
-
 #------------------------------------------------------------------------------#
 ## playing around with the parameters ##
 
@@ -222,9 +221,42 @@ pred_acc <- Pred_Data$Data[ ,2]
 # https://doi.org/10.3758/BF03196302
 
 #------------------------------------------------------------------------------#
-# to illustrate the use of the cost function, we will now create some "observed"
+# to illustrate the use of the cost function, we will look at our "observed"
 # data with known parameters and compare it to estimated data with the same or 
 # different parameters.
+
+# set some parameters here that you wish to compare to the data
+v_try<-0.8 # original drift rate: 0.8
+a_try<-0.75 #original bound: 0.75
+ter_try<-0.4 #original non-decision time: 0.4 seconds
+
+# we will predict some data using those parameters
+Pred_Data <- DDM_3params(v_try, a_try, ter_try)
+
+# plot our original data & prediction following from the parameters
+D <- data.frame(Gen_Data$Data)
+D$accuracy <- as.factor(D$accuracy)
+hist(D$RT[D$accuracy == 1],
+     prob = F, col = correct_fill_color,
+     breaks = 50,
+     xlab="Reaction time", ylab="Occurence",
+     border = "white", main = "")
+
+d <- density(Pred_Data$Data[(Pred_Data$Data[,2]==1),1])
+lines(d$x,sum(Pred_Data$Data[,2]==1)*d$y, type = 'l', col = correct_fill_color)
+
+hist(D$RT[D$accuracy == 0], , add=TRUE,
+              prob = F, col = error_fill_color,
+              breaks = 50,
+              border = "white", main = "")
+
+d <- density(Pred_Data$Data[(Pred_Data$Data[,2]==0),1])
+lines(d$x,sum(Pred_Data$Data[,2]==1)*d$y, type = 'l', col = error_fill_color)
+
+legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
+       legend=c("Correct trials","Incorrect trials"),
+       col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
+
 
 # run 10 simulations in which data is created from the original parameters or 
 # the original parameters with some added noise
