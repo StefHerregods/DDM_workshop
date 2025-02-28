@@ -251,7 +251,7 @@ hist(D$RT[D$accuracy == 0], , add=TRUE,
               border = "white", main = "")
 
 d <- density(Pred_Data$Data[(Pred_Data$Data[,2]==0),1])
-lines(d$x,sum(Pred_Data$Data[,2]==1)*d$y, type = 'l', col = error_fill_color)
+lines(d$x,sum(Pred_Data$Data[,2]==0)*d$y, type = 'l', col = error_fill_color)
 
 legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
        legend=c("Correct trials","Incorrect trials"),
