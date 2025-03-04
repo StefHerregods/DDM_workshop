@@ -209,6 +209,7 @@ obs_RT <- Gen_Data$Data[ ,1]
 obs_acc <- Gen_Data$Data[ ,2]
 pred_RT <- Pred_Data$Data[ ,1]
 pred_acc <- Pred_Data$Data[ ,2]
+plotting <- 1
 
 # now run the function Cost_ddm line by line
 
@@ -227,56 +228,43 @@ pred_acc <- Pred_Data$Data[ ,2]
 
 # set some parameters here that you wish to compare to the data
 v_try<-0.8 # original drift rate: 0.8
-a_try<-0.75 #original bound: 0.75
-ter_try<-0.4 #original non-decision time: 0.4 seconds
+a_try<-0.75 # original bound: 0.75
+ter_try<-0.4  #original non-decision time: 0.4 seconds
 
 # we will predict some data using those parameters
 Pred_Data <- DDM_3params(v_try, a_try, ter_try)
 
-# plot our original data & prediction following from the parameters
+# and calculate the cost of this prediction compared to the original data
+cost <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2], 0)
+
+# plot our original data & prediction following from the parameters, with cost indicated
 D <- data.frame(Gen_Data$Data)
 D$accuracy <- as.factor(D$accuracy)
 hist(D$RT[D$accuracy == 1],
-     prob = F, col = correct_fill_color,
-     breaks = 50,
+     col = correct_fill_color,
+     breaks = 50, freq = FALSE,
      xlab="Reaction time", ylab="Occurence",
-     border = "white", main = "")
+     border = "white", main = paste("Cost =", cost))
 
-d <- density(Pred_Data$Data[(Pred_Data$Data[,2]==1),1])
-lines(d$x,sum(Pred_Data$Data[,2]==1)*d$y, type = 'l', col = correct_fill_color)
+lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==1),1]), col = correct_fill_color)
 
 hist(D$RT[D$accuracy == 0], , add=TRUE,
-              prob = F, col = error_fill_color,
-              breaks = 50,
+              col = error_fill_color,
+              breaks = 50, freq = FALSE,
               border = "white", main = "")
 
-d <- density(Pred_Data$Data[(Pred_Data$Data[,2]==0),1])
-lines(d$x,sum(Pred_Data$Data[,2]==0)*d$y, type = 'l', col = error_fill_color)
+lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==0),1]), col = error_fill_color)
 
 legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
        legend=c("Correct trials","Incorrect trials"),
        col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
 
 
-# run 10 simulations in which data is created from the original parameters or 
-# the original parameters with some added noise
+## Q16 try to change the parameter values untill you get a low cost and a good
+# fit of the predicted data onto the original data (the lines should follow the
+# histogram distribution closely)
 
-cost_same <- vector()
-cost_diff <- vector()
-for(sim in 1:10){
-  Pred_Data <-DDM_3params(v,a,ter); # generate data with same parameters, should be low cost
-  cost_same[sim] <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2])
-  
-  Pred_Data <-DDM_3params(v+(rnorm(1)/10),a+rnorm(1),ter+(rnorm(1)/10)); # generate data with different parameters, should be high cost
-  cost_diff[sim] <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2])
-}
-
-## look at the values for cost_diff and cost_same, which ones are on average higher? Why?
-plot(c(1:10), cost_same, ylim = c(min(c(cost_diff, cost_same)), max(c(cost_diff, cost_same))), col = 'blue')
-points(c(1:10), cost_diff, col = 'red')
-
-# manual changes in parameter values, look at cost
-# plot also the distribution given these parameters over the generated data
+## Q17 which parameter values fit the original data best? Why do you think that is?
 
 #------------------------------------------------------------------------------#
 # in a real experiment we do not know the underlying parameters for the data we 
@@ -285,8 +273,6 @@ points(c(1:10), cost_diff, col = 'red')
 # each combination, but this might take a long time.
 # instead we use an differential evolution optimization which finds the best 
 # fitting combination for us
-
-# grid search vs optimization
 
 # have a look at the function Iterate_fit in DDM_fit_functions.R
 # in this function, some data is generated using the inputted parameter values,
@@ -312,13 +298,44 @@ optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
 ## look at the optimal parameters the fit function finds back:
 summary(optimal_params)
 
-## compare these optimal parameters to the ones we used to generate data ##
-# (v = 0.8, a = 0.75, ter = 0.4)
+## Q18 compare the optimal parameters the fit function finds to the ones we 
+# originally used to generate data (v = 0.8, a = 0.75, ter = 0.4).
+# Did the fitting procedure find back similar parameter values?
 
 # Note that this assumes  you never overwrote Gen_Data using different parameter 
 # values, if you did you should compare the optimal parameters to those values.
 
-# plot the fitted parameters over generated data
+#------------------------------------------------------------------------------#
+## let's look at how predicted data from these optimal parameters compares to 
+# our original data ##
+
+Pred_Data <- DDM_3params(optimal_params$optim$bestmem[1], optimal_params$optim$bestmem[2], optimal_params$optim$bestmem[3])
+cost <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2], 0)
+
+# plot our original data & prediction following from the optimal parameters
+D <- data.frame(Gen_Data$Data)
+D$accuracy <- as.factor(D$accuracy)
+hist(D$RT[D$accuracy == 1],
+     col = correct_fill_color,
+     breaks = 50, freq = FALSE,
+     xlab="Reaction time", ylab="Occurence",
+     border = "white", main = paste("Cost =", cost))
+
+lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==1),1]), col = correct_fill_color)
+
+hist(D$RT[D$accuracy == 0], , add=TRUE,
+     col = error_fill_color,
+     breaks = 50, freq = FALSE,
+     border = "white", main = "")
+
+lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==0),1]), col = error_fill_color)
+
+legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
+       legend=c("Correct trials","Incorrect trials"),
+       col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
+
+## Q19 What do you think of the fit these optimal parameters provide? Does it 
+# match your expectations?
 
 #------------------------------------------------------------------------------#
 # We seem to be able to find back  the generative parameter values we created 
@@ -353,6 +370,3 @@ summary(optimal_params)
 # extra oefening: voeg starting point toe
 # model comparison, bic
 # note: starting point should be dependent on boundary
-
-# compare the fit of different models to your data by calculating the bic for our
-# basic DDM (and what other model?)

@@ -3,30 +3,34 @@
 # input: observed RT, observed probability correct, predicted RT, predicted probability correct
 # output: cost (chi square)
 
-Cost_ddm <- function(obs_RT, obs_acc, pred_RT, pred_acc){
+Cost_ddm <- function(obs_RT, obs_acc, pred_RT, pred_acc, plotting){
   
   # define quantiles from observed RTs
   quantiles_cor <- quantile(obs_RT[obs_acc == 1], probs = c(.1,.3,.5,.7,.9), names = FALSE)
   quantiles_incor <- quantile(obs_RT[obs_acc == 0], probs = c(.1,.3,.5,.7,.9), names = FALSE)
 
-  par(mfrow = c(2,1))
-  # plot the distributions of correct and incorrect observations and add the quantiles
-  hist(obs_RT[obs_acc == 1],
-       prob = F, col = "green",
-       breaks = 50,
-       xlab="Reaction time", ylab="Occurence", main = "")
-  abline(v = quantiles_cor, col = "green")
-  hist(obs_RT[obs_acc == 0], , add=TRUE,
-       prob = F, col = "red",
-       breaks = 50, main = "")
-  abline(v = quantiles_incor, col = "red")
+  if(plotting)
+  {
+    par(mfrow = c(2,1))
+    # plot the distributions of correct and incorrect observations and add the quantiles
+    hist(obs_RT[obs_acc == 1],
+         prob = F, col = "green",
+         breaks = 50,
+         xlab="Reaction time", ylab="Occurence", main = "")
+    abline(v = quantiles_cor, col = "green")
+    hist(obs_RT[obs_acc == 0], , add=TRUE,
+         prob = F, col = "red",
+         breaks = 50, main = "")
+    abline(v = quantiles_incor, col = "red")
+  }
   
   # Q12 are the quantiles different for the correct and incorrect trials? Why 
   # do you think so?
   
   # now we use the same quantiles but instead of plotting the observed data, we 
   # plot the predicted data we made from our set of parameters.
-  
+  if(plotting)
+  {
   hist(pred_RT[pred_acc == 1],
        prob = F, col = "green",
        breaks = 50,
@@ -38,6 +42,7 @@ Cost_ddm <- function(obs_RT, obs_acc, pred_RT, pred_acc){
   abline(v = quantiles_incor, col = "red")
   
   par(mfrow = c(1,1))
+  }
   
   # Q13 compare the histogram with the observed data to the histogram with the 
   # predicted data. Does the same proportion of trials fall within the quantiles
@@ -104,7 +109,7 @@ Iterate_fit <- function(params, Observations){
   
   sim_data <-DDM_3params(v = params['v'],a = params['a'],ter=params['ter'])
   
-  cost<-Cost_ddm(Observations[ ,1], Observations[ ,2], sim_data$Data[ ,1], sim_data$Data[ ,2])
+  cost<-Cost_ddm(Observations[ ,1], Observations[ ,2], sim_data$Data[ ,1], sim_data$Data[ ,2],0)
   
   return(cost)
   
