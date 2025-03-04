@@ -346,11 +346,24 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
 
 # or load data that we gave you
 
+
 # set your data in a format that our function expects (two columns, one with 
 # reaction time in seconds and one with accuracy in 0/1 coding)
+D <-
 
-# make behavioral plot showing distributions?
-# make your own code
+# make a behavioral plot showing the reaction time distributions of correct and incorrect trials
+hist(D$RT[D$accuracy == 1],
+     col = correct_fill_color,
+     breaks = 50, freq = FALSE,
+     xlab="Reaction time", ylab="Occurence",
+     border = "white", main = paste("Cost =", cost))
+hist(D$RT[D$accuracy == 0], , add=TRUE,
+     col = error_fill_color,
+     breaks = 50, freq = FALSE,
+     border = "white", main = "")
+legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
+       legend=c("Correct trials","Incorrect trials"),
+       col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
 
 # run the optimization algorithm with your own data
 L<- c(0,0,0)
@@ -365,6 +378,9 @@ optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
 
 # look at the optimal parameters to describe your data
 summary(optimal_params)
+
+## Q20 How do these parameters compare to the ones we used to generate data for
+# the tutorial? What do you think could cause this difference?
 
 #------------------------------------------------------------------------------#
 # extra oefening: voeg starting point toe
