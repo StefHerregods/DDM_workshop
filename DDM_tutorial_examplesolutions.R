@@ -349,7 +349,8 @@ data <- read.csv("DDM_data.csv")
 
 # set your data in a format that our function expects (two columns, one with 
 # reaction time in seconds and one with accuracy in 0/1 coding)
-D <- 
+D <- data.frame(data)
+names(D)[names(D) == "rt"] <- "RT"
 
 # make a behavioral plot showing the reaction time distributions of correct and incorrect trials
 hist(D$RT[D$accuracy == 1],
@@ -365,6 +366,11 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
        legend=c("Correct trials","Incorrect trials"),
        col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
 
+# make sure only the two columns exist in variable Observations
+observations <- matrix(nrow = length(D$RT), ncol = 2)
+observations[,1] <- D$RT
+observations[,2] <- D$accuracy
+
 # run the optimization algorithm with your own data
 L<- c(0,0,0)
 U<- c(3,4,1) # drift rate, boundary, non-decision time (seconds)
@@ -374,7 +380,7 @@ optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
                           lower = L,  
                           upper = U,
                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                          ...)
+                          observations)
 
 # look at the optimal parameters to describe your data
 summary(optimal_params)
