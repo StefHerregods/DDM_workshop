@@ -391,9 +391,9 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
 # note that in the current model, we set the drift rate to positive or negative
 # at random, because we do not have an actual correct boundary.Now that you have
 # real data, there is a correct answer, and the drift rate should reflect this.
-# go into the DDM_3params.cpp function and change the line 33-35 to something
-# that reflects the actual correct decision for your data. Hint: you will need
-# to add an input variable to the function and to line 390 in this script.
+# Define CC here as the correct answer, the direction the dots were really going
+# in if you use our example data or data with an RDM stimulus.
+CC <- 
 
 # define the correct choice variable
 
@@ -406,7 +406,7 @@ optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
                           lower = L,  
                           upper = U,
                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                          observations)
+                          observations, CC)
 
 # look at the optimal parameters to describe your data
 summary(optimal_params)
