@@ -465,7 +465,7 @@ L<- c(0,0,0,...)
 U<- c(3,4,1,...) # drift rate, boundary, non-decision time (seconds), starting point
 
 ## now fit the best parameters using the optimization function
-optimal_params <- DEoptim(Iterate_fit_4params,  # Function to optimize
+optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
                           lower = L,  
                           upper = U,
                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
@@ -474,6 +474,9 @@ optimal_params <- DEoptim(Iterate_fit_4params,  # Function to optimize
 # look at the optimal parameters to describe your data
 summary(optimal_params)
 
+## Q23 was a bias present in your data? For which side?
+
+#------------------------------------------------------------------------------#
 ## Let's say we are not sure if our experiment resulted in a bias for participants,
 # and we would like to see if it makes sense to add the 4th parameter to our model.
 # we can do this using model comparison.

@@ -495,3 +495,5 @@ summary(optimal_params)
 ## Let's say we are not sure if our experiment resulted in a bias for participants,
 # and we would like to see if it makes sense to add the 4th parameter to our model.
 # we can do this using model comparison.
+
+
