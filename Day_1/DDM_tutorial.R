@@ -49,8 +49,21 @@ ter<-0.4 #non-decision time (seconds)
 # evidence is being added to the DV at every timestep (dt) with magnitude v. 
 # Some noise is also added with magnitude s (fixed at 1).
 
+# in a real experiment, the drift rate should depend on the stimulus. For example,
+# in a random dot motion stimulus where the dots are moving to the left, the 
+# drift rate should be negative, so that evidence accumulation is towards the 
+# lower bound. If the dots are moving to the right, the drift rate should be
+# positive. 
+# Given that we are just simulating data for the moment, we do not have the 
+# information on which choice would be correct and which sign the drift
+# rate should have.Therefor, we are randomly deciding the "correct choice" for
+# each trial. Later, we will use the experimental design to inform the correct choice.
+
+# create "correct choice", random for now
+CC <- sample(c(1,-1), 1000, replace = TRUE, prob = c(0.5,0.5))
+
 ## Let's now use the .cpp function to generate some data
-Gen_Data<-DDM_3params(v,a,ter)
+Gen_Data<-DDM_3params(v,a,ter,CC)
 colnames(Gen_Data$Data) <- c("RT", "accuracy")
 
 # replace zeros in DV and time with NA
@@ -145,7 +158,7 @@ a<-0.75 #bound
 ter<-0.4 #non-decision time
 
 # run here
-Try_Data<-DDM_3params(v,a,ter)
+Try_Data<-DDM_3params(v,a,ter,CC)
 Try_Data$DVs[Try_Data$Dvs == 0] <- NA
 Try_Data$time[Try_Data$time == 0] <- NA
 Try_Data$time[ ,1] = 0
@@ -196,8 +209,6 @@ par(mfrow = c(1,1))
 ## have a look at the function "Cost_ddm" inside DDM_fit_functions_tutorial.R
 # and answer the questions.
 
-## cost should be minimized !!
-
 # this script computes 5 quantiles (containing a proportion of 0.1, 0.3, 0.5, 
 # 0.7 and 0.9 of reaction times) in the observed data and  then computes the 
 # probability of both a correct and incorrect choice within these quantiles.
@@ -205,8 +216,16 @@ par(mfrow = c(1,1))
 
 # (obs_prop_cor - pred_prop_cor)^2 / pred_prop_cor + (obs_prop_incor - pred_prop_incor)^2 / pred_prop_incor
 
+# We call this the cost, because it computes how different the observed and estimated
+# distributions are, and this is what we'd like to reduce as much as possible. A
+# low cost means that the distributions are quite similair, and the parameters
+# used to generate the data are close to those that underlie the observed data.
+# therefor, when fitting a model, we always try to minimize the cost. That is
+# what we will do later when fitting the model to some data. For now, we are just
+# working on understanding the cost.
+
 # make the input variables to the function
-Pred_Data <-DDM_3params(0.9,0.6,0.3); # we predict the data is well described by these parameters
+Pred_Data <-DDM_3params(0.9,0.6,0.3,CC); # we predict the data is well described by these parameters
 obs_RT <- Gen_Data$Data[ ,1]
 obs_acc <- Gen_Data$Data[ ,2]
 pred_RT <- Pred_Data$Data[ ,1]
@@ -229,12 +248,12 @@ plotting <- 1
 # different parameters.
 
 # set some parameters here that you wish to compare to the data
-v_try<-0.8 # original drift rate: 0.8
+v_try<-0.6 # original drift rate: 0.8
 a_try<-0.75 # original bound: 0.75
 ter_try<-0.4  #original non-decision time: 0.4 seconds
 
 # we will predict some data using those parameters
-Pred_Data <- DDM_3params(v_try, a_try, ter_try)
+Pred_Data <- DDM_3params(v_try, a_try, ter_try,CC)
 
 # and calculate the cost of this prediction compared to the original data
 cost <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2], 0)
@@ -295,7 +314,7 @@ optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
                           lower = L,  
                           upper = U,
                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                          Gen_Data$Data)
+                          Gen_Data$Data, CC)
 
 ## look at the optimal parameters the fit function finds back:
 summary(optimal_params)
@@ -311,7 +330,7 @@ summary(optimal_params)
 ## let's look at how predicted data from these optimal parameters compares to 
 # our original data ##
 
-Pred_Data <- DDM_3params(optimal_params$optim$bestmem[1], optimal_params$optim$bestmem[2], optimal_params$optim$bestmem[3])
+Pred_Data <- DDM_3params(optimal_params$optim$bestmem[1], optimal_params$optim$bestmem[2], optimal_params$optim$bestmem[3], CC)
 cost <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2], 0)
 
 # plot our original data & prediction following from the optimal parameters

@@ -6,7 +6,7 @@ using namespace Rcpp;
 static Ziggurat::Ziggurat::Ziggurat zigg;
 
 // [[Rcpp::export]]
-List DDM_3params(double v, double a, double ter, int ntrials = 1000, double s = 1, double dt = 0.01) { 
+List DDM_3params(double v, double a, double ter, NumericVector CC, int ntrials = 1000, double s = 1, double dt = 0.01) { 
   
   // parameter names:
   // v: drift rate
@@ -30,9 +30,7 @@ List DDM_3params(double v, double a, double ter, int ntrials = 1000, double s = 
     
     // make drift rate negative for half of the trials
     // use experimental design to determine negative/positive
-    if(i >= ntrials/2){
-      v = -v;
-    }
+    v = CC[i] * v;
     
     // initialize variables
     int acc = 0;

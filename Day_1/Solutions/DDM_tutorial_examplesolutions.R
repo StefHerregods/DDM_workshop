@@ -354,6 +354,11 @@ data <- read.csv("DDM_data.csv")
 D <- data.frame(data)
 names(D)[names(D) == "rt"] <- "RT"
 
+# make sure only the two columns exist in variable Observations
+observations <- matrix(nrow = length(D$RT), ncol = 2)
+observations[,1] <- D$RT
+observations[,2] <- D$accuracy
+
 # make a behavioral plot showing the reaction time distributions of correct and incorrect trials
 hist(D$RT[D$accuracy == 1],
      col = correct_fill_color,
@@ -368,19 +373,11 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
        legend=c("Correct trials","Incorrect trials"),
        col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
 
-# make sure only the two columns exist in variable Observations
-observations <- matrix(nrow = length(D$RT), ncol = 2)
-observations[,1] <- D$RT
-observations[,2] <- D$accuracy
-
 # note that in the current model, we set the drift rate to positive or negative
 # at random, because we do not have an actual correct boundary.Now that you have
 # real data, there is a correct answer, and the drift rate should reflect this.
-# go into the DDM_3params.cpp function and change the line 33-35 to something
-# that reflects the actual correct decision for your data. Hint: you will need
-# to add an input variable to the function and to line 392 in this script.
-
-sourceCpp("DDM_3params_withData.cpp")
+# Define CC here as the correct answer, the direction the dots were really going
+# in if you use our example data or data with an RDM stimulus.
 
 # define the correct choice variable
 CC_chr <- D$correct_response
@@ -393,7 +390,7 @@ L<- c(0,0,0)
 U<- c(3,4,1) # drift rate, boundary, non-decision time (seconds)
 
 ## now fit the best parameters using the optimization function
-optimal_params <- DEoptim(Iterate_fit_withData,  # Function to optimize
+optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
                           lower = L,  
                           upper = U,
                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
@@ -432,6 +429,7 @@ summary(optimal_params)
 
 # now run your new function to generate some data and plot a couple of DVs
 # make sure to source your new function first
+setwd("~/Code/DDM_workshop/Day_1/Solutions")
 sourceCpp("DDM_4params.cpp")
 
 # define parameters
@@ -461,57 +459,3 @@ abline(h = -a, col = "red")
 
 ## Q22 what do you notice about the DVs when trying different values of the starting
 # point variable? Does your model work as expected?
-
-## see if we can do parameter recovery
-
-# define the upper and lower boundary of your starting point parameter
-L<- c(0,0,0,-1)
-U<- c(3,4,1,1) # drift rate, boundary, non-decision time (seconds), starting point
-
-## now fit the best parameters using the optimization function
-optimal_params <- DEoptim(Iterate_fit_4params,  # Function to optimize
-                          lower = L,  
-                          upper = U,
-                          control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                          Gen_Data$Data, CC)
-
-# look at the optimal parameters to describe your data
-summary(optimal_params)
-
-#------------------------------------------------------------------------------#
-## let's fit this new model on our data and see what the estimate of starting point is ##
-
-# first we have to adjust the Iterate_fit function so that it takes our new model
-# open the DDM_fit_functions_tutorial.R script and change the Iterate_fit function
-# so that it works with DDM_4params instead of DDM_3params.
-
-# (re)define the correct choice variable using the data
-CC_chr <- D$correct_response
-CC <- vector()
-CC[CC_chr == 'left'] <- as.integer(-1);
-CC[CC_chr == 'right'] <- as.integer(1);
-
-# run the optimization algorithm with your own data
-
-# define the upper and lower boundary of your starting point parameter
-L<- c(0,0,0,-1)
-U<- c(3,4,1,1) # drift rate, boundary, non-decision time (seconds), starting point
-
-## now fit the best parameters using the optimization function
-optimal_params <- DEoptim(Iterate_fit_4params,  # Function to optimize
-                          lower = L,  
-                          upper = U,
-                          control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                          observations, CC)
-
-# look at the optimal parameters to describe your data
-summary(optimal_params)
-
-## Q23 was a bias present in your data? For which side?
-
-#------------------------------------------------------------------------------#
-## Let's say we are not sure if our experiment resulted in a bias for participants,
-# and we would like to see if it makes sense to add the 4th parameter to our model.
-# we can do this using model comparison.
-
-
