@@ -196,6 +196,8 @@ par(mfrow = c(1,1))
 ## have a look at the function "Cost_ddm" inside DDM_fit_functions_tutorial.R
 # and answer the questions.
 
+## cost should be minimized !!
+
 # this script computes 5 quantiles (containing a proportion of 0.1, 0.3, 0.5, 
 # 0.7 and 0.9 of reaction times) in the observed data and  then computes the 
 # probability of both a correct and incorrect choice within these quantiles.
@@ -459,6 +461,22 @@ abline(h = -a, col = "red")
 
 ## Q22 what do you notice about the DVs when trying different values of the starting
 # point variable? Does your model work as expected?
+
+## see if we can do parameter recovery
+
+# define the upper and lower boundary of your starting point parameter
+L<- c(0,0,0,-1)
+U<- c(3,4,1,1) # drift rate, boundary, non-decision time (seconds), starting point
+
+## now fit the best parameters using the optimization function
+optimal_params <- DEoptim(Iterate_fit_4params,  # Function to optimize
+                          lower = L,  
+                          upper = U,
+                          control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
+                          Gen_Data$Data, CC)
+
+# look at the optimal parameters to describe your data
+summary(optimal_params)
 
 #------------------------------------------------------------------------------#
 ## let's fit this new model on our data and see what the estimate of starting point is ##

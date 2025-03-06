@@ -196,6 +196,8 @@ par(mfrow = c(1,1))
 ## have a look at the function "Cost_ddm" inside DDM_fit_functions_tutorial.R
 # and answer the questions.
 
+## cost should be minimized !!
+
 # this script computes 5 quantiles (containing a proportion of 0.1, 0.3, 0.5, 
 # 0.7 and 0.9 of reaction times) in the observed data and  then computes the 
 # probability of both a correct and incorrect choice within these quantiles.
@@ -372,7 +374,7 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
 # real data, there is a correct answer, and the drift rate should reflect this.
 # go into the DDM_3params.cpp function and change the line 33-35 to something
 # that reflects the actual correct decision for your data. Hint: you will need
-# to add an input variable to the function and to line 388 in this script.
+# to add an input variable to the function and to line 390 in this script.
 
 # define the correct choice variable
 
