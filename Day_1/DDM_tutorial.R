@@ -449,37 +449,3 @@ abline(h = -a, col = "red")
 
 ## Q22 what do you notice about the DVs when trying different values of the starting
 # point variable? Does your model work as expected?
-
-#------------------------------------------------------------------------------#
-## let's fit this new model on our data and see what the estimate of starting point is ##
-
-# first we have to adjust the Iterate_fit function so that it takes our new model
-# open the DDM_fit_functions_tutorial.R script and change the Iterate_fit function
-# so that it works with DDM_4params instead of DDM_3params.
-
-# (re)define the correct choice variable using the data
-CC <- ...
-
-# run the optimization algorithm with your own data
-
-# define the upper and lower boundary of your starting point parameter
-L<- c(0,0,0,...)
-U<- c(3,4,1,...) # drift rate, boundary, non-decision time (seconds), starting point
-
-## now fit the best parameters using the optimization function
-optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
-                          lower = L,  
-                          upper = U,
-                          control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                          observations, CC)
-
-# look at the optimal parameters to describe your data
-summary(optimal_params)
-
-## Q23 was a bias present in your data? For which side?
-
-#------------------------------------------------------------------------------#
-## Let's say we are not sure if our experiment resulted in a bias for participants,
-# and we would like to see if it makes sense to add the 4th parameter to our model.
-# we can do this using model comparison.
-
