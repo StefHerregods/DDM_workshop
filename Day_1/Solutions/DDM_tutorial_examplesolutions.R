@@ -267,19 +267,25 @@ D <- data.frame(Gen_Data$Data)
 D$accuracy <- as.factor(D$accuracy)
 hist(D$RT[D$accuracy == 1],
      col = correct_fill_color,
-     breaks = 50, #probability = TRUE,
+     breaks = 50, #freq = FALSE,
      xlab="Reaction time", ylab="Occurence",
      border = "white", main = paste("Cost =", cost))
 scale_x_continuous(breaks = waiver())
 
-lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==1),1]), col = correct_fill_color)
+#lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==1),1]), col = correct_fill_color)
+
+d <- density(Pred_Data$Data[(Pred_Data$Data[,2]==1),1])
+lines(d$x,sum(Pred_Data$Data[,2]==1)*d$y, type = 'l', col = correct_fill_color)
 
 hist(D$RT[D$accuracy == 0], , add=TRUE,
               col = error_fill_color,
-              breaks = 50, probability = TRUE,
+              breaks = 50, #freq = FALSE,
               border = "white", main = "")
 
-lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==0),1]), col = error_fill_color)
+#lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==0),1]), col = error_fill_color)
+
+d <- density(Pred_Data$Data[(Pred_Data$Data[,2]==0),1])
+lines(d$x,sum(Pred_Data$Data[,2]==0)*d$y, type = 'l', col = error_fill_color)
 
 legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
        legend=c("Correct trials","Incorrect trials"),
