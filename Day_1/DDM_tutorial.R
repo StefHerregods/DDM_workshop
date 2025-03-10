@@ -1,4 +1,4 @@
-# Drift Diffussion model tutorial
+# Drift Diffusion model tutorial
 # generating data, calculating cost, recovering paramaters and fitting your own data
 
 #------------------------------------------------------------------------------#
@@ -377,12 +377,12 @@ observations <- ...
 # make a behavioral plot showing the reaction time distributions of correct and incorrect trials
 hist(D$RT[D$accuracy == 1],
      col = correct_fill_color,
-     breaks = 50, freq = FALSE,
+     breaks = 50,
      xlab="Reaction time", ylab="Occurence",
      border = "white", main = "")
 hist(D$RT[D$accuracy == 0], , add=TRUE,
      col = error_fill_color,
-     breaks = 50, freq = FALSE,
+     breaks = 50,
      border = "white", main = "")
 legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
        legend=c("Correct trials","Incorrect trials"),
@@ -406,7 +406,7 @@ optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
                           lower = L,  
                           upper = U,
                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                          observations, CC)
+                          observations, CC, ntrials = nrow(observations))
 
 # look at the optimal parameters to describe your data
 summary(optimal_params)

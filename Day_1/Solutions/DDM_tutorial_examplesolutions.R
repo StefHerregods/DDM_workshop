@@ -1,4 +1,4 @@
-# Drift Diffussion model tutorial
+# Drift Diffusion model tutorial
 # generating data, calculating cost, recovering paramaters and fitting your own data
 
 #------------------------------------------------------------------------------#
@@ -123,13 +123,11 @@ D$accuracy <- as.factor(D$accuracy)
 correct_fill_color <- adjustcolor("#2A9D8F", alpha.f = 0.25)
 error_fill_color <- adjustcolor("#E76F51", alpha.f = 0.25)
 tempC <- hist(D$RT[D$accuracy == 1],
-              prob = F, col = correct_fill_color,
-              breaks = 50,
+              col = correct_fill_color, breaks = 50,
               xlab="Reaction time", ylab="Occurence",
               border = "white", main = "")
 tempE <- hist(D$RT[D$accuracy == 0], , add=TRUE,
-              prob = F, col = error_fill_color,
-              breaks = 50,
+              col = error_fill_color, breaks = 50,
               border = "white", main = "")
 
 legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
@@ -176,13 +174,11 @@ abline(h = -a, col = "red")
 D <- data.frame(Try_Data$Data)
 D$accuracy <- as.factor(D$accuracy)
 hist(D$RT[D$accuracy == 1],
-              prob = F, col = correct_fill_color,
-              breaks = 50,
+              col = correct_fill_color, breaks = 50,
               xlab="Reaction time", ylab="Occurence",
               border = "white", main = "")
 hist(D$RT[D$accuracy == 0], , add=TRUE,
-              prob = F, col = error_fill_color,
-              breaks = 50,
+              col = error_fill_color, breaks = 50,
               border = "white", main = "")
 
 legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
@@ -210,8 +206,6 @@ par(mfrow = c(1,1))
 
 ## have a look at the function "Cost_ddm" inside DDM_fit_functions_tutorial.R
 # and answer the questions.
-
-## cost should be minimized !!
 
 # this script computes 5 quantiles (containing a proportion of 0.1, 0.3, 0.5, 
 # 0.7 and 0.9 of reaction times) in the observed data and  then computes the 
@@ -266,8 +260,7 @@ cost <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pr
 D <- data.frame(Gen_Data$Data)
 D$accuracy <- as.factor(D$accuracy)
 hist(D$RT[D$accuracy == 1],
-     col = correct_fill_color,
-     breaks = 50, #freq = FALSE,
+     col = correct_fill_color, breaks = 50,
      xlab="Reaction time", ylab="Occurence",
      border = "white", main = paste("Cost =", cost))
 scale_x_continuous(breaks = waiver())
@@ -278,8 +271,7 @@ d <- density(Pred_Data$Data[(Pred_Data$Data[,2]==1),1])
 lines(d$x,sum(Pred_Data$Data[,2]==1)*d$y, type = 'l', col = correct_fill_color)
 
 hist(D$RT[D$accuracy == 0], , add=TRUE,
-              col = error_fill_color,
-              breaks = 50, #freq = FALSE,
+              col = error_fill_color, breaks = 50,
               border = "white", main = "")
 
 #lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==0),1]), col = error_fill_color)
@@ -349,7 +341,7 @@ D <- data.frame(Gen_Data$Data)
 D$accuracy <- as.factor(D$accuracy)
 hist(D$RT[D$accuracy == 1],
      col = correct_fill_color,
-     breaks = 50, #freq = FALSE,
+     breaks = 50, freq = FALSE,
      xlab="Reaction time", ylab="Occurence",
      border = "white", main = paste("Cost =", cost))
 
@@ -357,7 +349,7 @@ lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==1),1]), col = correct_
 
 hist(D$RT[D$accuracy == 0], , add=TRUE,
      col = error_fill_color,
-     breaks = 50, #freq = FALSE,
+     breaks = 50, freq = FALSE,
      border = "white", main = "")
 
 lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==0),1]), col = error_fill_color)
@@ -377,6 +369,7 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
 # load your data 
 
 # or load data that we gave you
+setwd("~/Code/DDM_workshop/Day_1")
 data <- read.csv("DDM_data.csv")
 
 # set your data in a format that our function expects (two columns, one with 
@@ -392,12 +385,12 @@ observations[,2] <- D$accuracy
 # make a behavioral plot showing the reaction time distributions of correct and incorrect trials
 hist(D$RT[D$accuracy == 1],
      col = correct_fill_color,
-     breaks = 50, freq = FALSE,
+     breaks = 50,
      xlab="Reaction time", ylab="Occurence",
      border = "white", main = "")
-hist(D$RT[D$accuracy == 0], , add=TRUE,
+hist(D$RT[D$accuracy == 0], add=TRUE,
      col = error_fill_color,
-     breaks = 50, freq = FALSE,
+     breaks = 50,
      border = "white", main = "")
 legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
        legend=c("Correct trials","Incorrect trials"),
@@ -424,7 +417,7 @@ optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
                           lower = L,  
                           upper = U,
                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                          observations, CC)
+                          observations, CC, ntrials = nrow(observations))
 
 # look at the optimal parameters to describe your data
 summary(optimal_params)
@@ -489,3 +482,24 @@ abline(h = -a, col = "red")
 
 ## Q22 what do you notice about the DVs when trying different values of the starting
 # point variable? Does your model work as expected?
+
+# #------------------------------------------------------------------------------#
+# ## see if we can recover the starting point parameter ##
+# 
+# # create "correct choice", random for now
+# CC <- sample(c(1,-1), 1000, replace = TRUE, prob = c(0.5,0.5))
+# 
+# # run the optimization algorithm with your own data
+# L<- c(0,0,0,-1)
+# U<- c(3,4,1,1) # drift rate, boundary, non-decision time (seconds)
+# 
+# ## now fit the best parameters using the optimization function
+# optimal_params <- DEoptim(Iterate_fit_4params,  # Function to optimize
+#                           lower = L,  
+#                           upper = U,
+#                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
+#                           observations, CC)
+# 
+# # look at the optimal parameters to describe your data
+# summary(optimal_params)
+

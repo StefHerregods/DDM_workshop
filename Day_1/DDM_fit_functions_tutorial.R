@@ -102,11 +102,11 @@ Cost_ddm <- function(obs_RT, obs_acc, pred_RT, pred_acc, plotting){
 
 # single iteration of fitting procedure, generate data given set of parameters and calculate cost
 # input: observations (2xntrials matrix, column 1 RT, column 2 accuracy)
-Iterate_fit <- function(params, Observations, CC){
+Iterate_fit <- function(params, Observations, CC, ntrials = 1000){
   
   names(params) <- c('v', 'a', 'ter')
   
-  sim_data <-DDM_3params(v = params['v'],a = params['a'],ter=params['ter'], CC)
+  sim_data <-DDM_3params(v = params['v'],a = params['a'],ter=params['ter'], CC, ntrials = ntrials)
   
   cost<-Cost_ddm(Observations[ ,1], Observations[ ,2], sim_data$Data[ ,1], sim_data$Data[ ,2],0)
   
