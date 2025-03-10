@@ -114,25 +114,14 @@ abline(h = -a, col = "red")
 # predicted behaviour given some set of parameters to actual participant behaviour.
 
 # let's look at the reaction time distributions of correct and incorrect choices.
-
-# create a dataframe with our "reaction times" and "choice accuracy"
-D <- data.frame(Gen_Data$Data)
-D$accuracy <- as.factor(D$accuracy)
-
-# plot histogram in red and green for correct and incorrect reaction times
 correct_fill_color <- adjustcolor("#2A9D8F", alpha.f = 0.25)
 error_fill_color <- adjustcolor("#E76F51", alpha.f = 0.25)
-tempC <- hist(D$RT[D$accuracy == 1],
-              col = correct_fill_color, breaks = 50,
-              xlab="Reaction time", ylab="Occurence",
-              border = "white", main = "")
-tempE <- hist(D$RT[D$accuracy == 0], , add=TRUE,
-              col = error_fill_color, breaks = 50,
-              border = "white", main = "")
-
-legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
-       legend=c("Correct trials","Incorrect trials"),
-       col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
+df_observed <- data.frame(Gen_Data$Data)
+ggplot() +
+  geom_histogram(data = df_observed, aes(x = RT, y = ..count../nrow(df_observed), fill = as.factor(accuracy)),
+                 binwidth = 0.05, color = "black", alpha = 0.5, position = "identity") +
+  scale_fill_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct")) +
+  scale_color_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct"))
 
 ## Q5 what do you notice about the number of trials that are correct and incorrect?
 
@@ -223,7 +212,16 @@ par(mfrow = c(1,1))
 # working on understanding the cost.
 
 # make the input variables to the function
-Pred_Data <-DDM_3params(0.9,0.6,0.3,CC); # we predict the data is well described by these parameters
+
+# how many trials should the estimated distribution have? This is typically more
+# than the observed trials, because that will create a smoother distribution. Let's
+# set it to 50000 (we originally simulated 1000 trials)
+n_est_trials = 50000
+
+# redefine "correct choice" variable
+CC <- sample(c(1,-1), n_est_trials, replace = TRUE, prob = c(0.5,0.5))
+
+Pred_Data <-DDM_3params(0.9,0.6,0.3,CC,ntrials=n_est_trials); # we predict the data is well described by these parameters
 obs_RT <- Gen_Data$Data[ ,1]
 obs_acc <- Gen_Data$Data[ ,2]
 pred_RT <- Pred_Data$Data[ ,1]
@@ -231,6 +229,7 @@ pred_acc <- Pred_Data$Data[ ,2]
 plotting <- 1
 
 # now run the function Cost_ddm line by line
+cost <- Cost_ddm(obs_RT, obs_acc, pred_RT, pred_acc, plotting)
 
 # if you'd like to understand the cost function better, have a look at the 
 # Chi-Square Fitting Method described on page 9 of:
@@ -246,43 +245,28 @@ plotting <- 1
 # different parameters.
 
 # set some parameters here that you wish to compare to the data
-v_try<-0.8 # original drift rate: 0.8
-a_try<-0.75 # original bound: 0.75
-ter_try<-0.4  #original non-decision time: 0.4 seconds
+v_try<-0.6 # original drift rate: 0.8
+a_try<-1.1 # original bound: 0.75
+ter_try<-0.1  #original non-decision time: 0.4 seconds
 
 # we will predict some data using those parameters
-Pred_Data <- DDM_3params(v_try, a_try, ter_try,CC)
+Pred_Data <- DDM_3params(v_try, a_try, ter_try, CC, ntrials = n_est_trials)
+colnames(Pred_Data$Data) <- c("RT", "accuracy")
 
 # and calculate the cost of this prediction compared to the original data
 cost <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2], 0)
 
 # plot our original data & prediction following from the parameters, with cost indicated
-D <- data.frame(Gen_Data$Data)
-D$accuracy <- as.factor(D$accuracy)
-hist(D$RT[D$accuracy == 1],
-     col = correct_fill_color, breaks = 50,
-     xlab="Reaction time", ylab="Occurence",
-     border = "white", main = paste("Cost =", cost))
-scale_x_continuous(breaks = waiver())
-
-#lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==1),1]), col = correct_fill_color)
-
-d <- density(Pred_Data$Data[(Pred_Data$Data[,2]==1),1])
-lines(d$x,sum(Pred_Data$Data[,2]==1)*d$y, type = 'l', col = correct_fill_color)
-
-hist(D$RT[D$accuracy == 0], , add=TRUE,
-              col = error_fill_color, breaks = 50,
-              border = "white", main = "")
-
-#lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==0),1]), col = error_fill_color)
-
-d <- density(Pred_Data$Data[(Pred_Data$Data[,2]==0),1])
-lines(d$x,sum(Pred_Data$Data[,2]==0)*d$y, type = 'l', col = error_fill_color)
-
-legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
-       legend=c("Correct trials","Incorrect trials"),
-       col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
-
+df_observed <- data.frame(Gen_Data$Data)
+df_predicted <- data.frame(Pred_Data$Data)
+ggplot() +
+  geom_histogram(data = df_observed, aes(x = RT, y = ..count../nrow(df_observed), fill = as.factor(accuracy)),
+                 binwidth = 0.05, color = "black", alpha = 0.5, position = "identity") +
+  geom_freqpoly(data = df_predicted, aes(x = RT, y = ..count../nrow(df_predicted), color = as.factor(accuracy)),
+                binwidth = 0.05, linewidth = 1, alpha = 1, inherit.aes = FALSE) + 
+  scale_fill_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct")) +  
+  scale_color_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct")) +
+  ggtitle(paste("Cost =", cost))
 
 ## Q16 try to change the parameter values untill you get a low cost and a good
 # fit of the predicted data onto the original data (the lines should follow the
@@ -312,12 +296,18 @@ legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
 L<- c(0,0,0)
 U<- c(3,4,1) # drift rate, boundary, non-decision time (seconds)
 
+# choose number of estimated trials
+n_est_trials = 5000
+
+# redefine "correct choice" variable
+CC <- sample(c(1,-1), n_est_trials, replace = TRUE, prob = c(0.5,0.5))
+
 ## now fit the best parameters using the optimization function
 optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
                           lower = L,  
                           upper = U,
                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                          Gen_Data$Data, CC)
+                          Gen_Data$Data, CC, ntrials = n_est_trials)
 
 ## look at the optimal parameters the fit function finds back:
 summary(optimal_params)
@@ -333,30 +323,21 @@ summary(optimal_params)
 ## let's look at how predicted data from these optimal parameters compares to 
 # our original data ##
 
-Pred_Data <- DDM_3params(optimal_params$optim$bestmem[1], optimal_params$optim$bestmem[2], optimal_params$optim$bestmem[3], CC)
+Pred_Data <- DDM_3params(optimal_params$optim$bestmem[1], optimal_params$optim$bestmem[2], optimal_params$optim$bestmem[3], CC, ntrials = n_est_trials)
+colnames(Pred_Data$Data) <- c("RT", "accuracy")
 cost <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2], 0)
 
 # plot our original data & prediction following from the optimal parameters
-D <- data.frame(Gen_Data$Data)
-D$accuracy <- as.factor(D$accuracy)
-hist(D$RT[D$accuracy == 1],
-     col = correct_fill_color,
-     breaks = 50, freq = FALSE,
-     xlab="Reaction time", ylab="Occurence",
-     border = "white", main = paste("Cost =", cost))
-
-lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==1),1]), col = correct_fill_color)
-
-hist(D$RT[D$accuracy == 0], , add=TRUE,
-     col = error_fill_color,
-     breaks = 50, freq = FALSE,
-     border = "white", main = "")
-
-lines(x = density(x = Pred_Data$Data[(Pred_Data$Data[,2]==0),1]), col = error_fill_color)
-
-legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
-       legend=c("Correct trials","Incorrect trials"),
-       col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
+df_observed <- data.frame(Gen_Data$Data)
+df_predicted <- data.frame(Pred_Data$Data)
+ggplot() +
+  geom_histogram(data = df_observed, aes(x = RT, y = ..count../nrow(df_observed), fill = as.factor(accuracy)),
+                 binwidth = 0.05, color = "black", alpha = 0.5, position = "identity") +
+  geom_freqpoly(data = df_predicted, aes(x = RT, y = ..count../nrow(df_predicted), color = as.factor(accuracy)),
+                binwidth = 0.05, linewidth = 1, alpha = 1, inherit.aes = FALSE) + 
+  scale_fill_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct")) +  
+  scale_color_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct")) +
+  ggtitle(paste("Cost =", cost))
 
 ## Q19 What do you think of the fit these optimal parameters provide? Does it 
 # match your expectations?
@@ -383,18 +364,12 @@ observations[,1] <- D$RT
 observations[,2] <- D$accuracy
 
 # make a behavioral plot showing the reaction time distributions of correct and incorrect trials
-hist(D$RT[D$accuracy == 1],
-     col = correct_fill_color,
-     breaks = 50,
-     xlab="Reaction time", ylab="Occurence",
-     border = "white", main = "")
-hist(D$RT[D$accuracy == 0], add=TRUE,
-     col = error_fill_color,
-     breaks = 50,
-     border = "white", main = "")
-legend("topright",fill=c("white","white","#2A9D8F","#E76F51"),border=F,
-       legend=c("Correct trials","Incorrect trials"),
-       col=c("#2A9D8F","#E76F51"),bty='n',lwd=c(1,1,-1,-1))
+df_observed <- D
+ggplot() +
+  geom_histogram(data = df_observed, aes(x = RT, y = ..count../nrow(df_observed), fill = as.factor(accuracy)),
+                 binwidth = 0.05, color = "black", alpha = 0.5, position = "identity") +
+  scale_fill_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct")) +
+  scale_color_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct"))
 
 # note that in the current model, we set the drift rate to positive or negative
 # at random, because we do not have an actual correct boundary.Now that you have

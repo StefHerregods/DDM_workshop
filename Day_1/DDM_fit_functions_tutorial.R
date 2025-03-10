@@ -86,8 +86,9 @@ Cost_ddm <- function(obs_RT, obs_acc, pred_RT, pred_acc, plotting){
   pred_prop_cor <- pred_prop_cor / length(pred_RT)
   pred_prop_incor <- pred_prop_incor / length(pred_RT)
   
-  # Q14 compare obs_prop_cor to pred_prop_cor, which quantile has the highest 
-  # number of trials for both?
+  # Q14 compare obs_prop_cor to pred_prop_cor, the correct proportion of trials
+  # in each quantile for the observed and predicted data. Which quantile has the 
+  # highest proportion of trials for both?
   obs_prop_cor
   pred_prop_cor
   
