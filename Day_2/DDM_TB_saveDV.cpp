@@ -18,7 +18,7 @@ List DDM_TB_saveDV(double v, double a, double ter, double tau, int ntrials = 100
   // dt: precision (in seconds)
   
   // Initialize matrices for output
-  NumericMatrix DATA(ntrials, 4);
+  NumericMatrix DATA(ntrials, 5);
   NumericMatrix DVs(ntrials,(10/dt)); // initialize matrix with length 10 seconds
   NumericMatrix time(ntrials, (10/dt)); 
   
@@ -32,7 +32,7 @@ List DDM_TB_saveDV(double v, double a, double ter, double tau, int ntrials = 100
     
     // Initialize variables
     int acc = -1;  // Accuracy
-    int choice = -1;  // Choice (1 = upper bound reached, 0 = lower bound reached)
+    int choice = -1;  // Choice (1 = upper bound reached, -1 = lower bound reached)
     int cj = -1;  // Confidence judgment
     double evidence = 0;  // Accumulated evidence
     double t = 0;  // Decision RT
@@ -65,7 +65,7 @@ List DDM_TB_saveDV(double v, double a, double ter, double tau, int ntrials = 100
       } else if (evidence <= -a) {
         if(v>0) {acc = 0;}
         if(v<0) {acc = 1;}
-        choice = 0;
+        choice = -1;
         break;
       }
     }
@@ -73,7 +73,12 @@ List DDM_TB_saveDV(double v, double a, double ter, double tau, int ntrials = 100
     // Post-decisional processing for interjudgment time tau
     while (t2 < tau){
       t2 = t2 + dt;
+      t_idx = t_idx +1;
       evidence = evidence + v * dt + s * sqrt(dt) * zigg.norm();
+      
+      if((i<20) & (t < 5)){
+        time(i,t_idx) = t+t2;
+        DVs(i,t_idx) = evidence;}
     }
     
     // A high confidence judgment is given if evidence towards the choice increased
@@ -84,7 +89,7 @@ List DDM_TB_saveDV(double v, double a, double ter, double tau, int ntrials = 100
       } else {
         cj = 0;
       }
-    } else if (choice == 0){
+    } else if (choice == -1){
       if (evidence < -a){
         cj = 1;
       } else {
@@ -94,9 +99,10 @@ List DDM_TB_saveDV(double v, double a, double ter, double tau, int ntrials = 100
     
     // Add results to the matrix
     DATA(i,0) = t;  // Decision RT
-    DATA(i,1) = acc;  // Accuracy
-    DATA(i,2) = t2;  // Confidence RT
-    DATA(i,3) = cj;  // Confidence judgment
+    DATA(i,1) = choice; // Choice
+    DATA(i,2) = acc;  // Accuracy
+    DATA(i,3) = t2;  // Confidence RT
+    DATA(i,4) = cj;  // Confidence judgment
   }
   
   List return_vars;
