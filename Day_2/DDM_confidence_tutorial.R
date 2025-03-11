@@ -29,7 +29,7 @@ v <- 0.8  # Drift rate
 a <- 0.75  # Decision bound
 ter <- 0.4  # Non-decision time (in seconds)
 tau <- 1  # Interjudgment time (in seconds)
-          # = time between making a decision and confidence judgment
+# = time between making a decision and confidence judgment
 
 # Try out a few combinations of parameters. Use the functions below to simulate
 # and plot results.
@@ -61,11 +61,11 @@ ggplot() +
   geom_histogram(data = observations, aes(x = rt, fill = as.factor(accuracy), 
                                           y = after_stat(..count.. / sum(..count..))),
                  binwidth = 0.2, color = "black", alpha = 0.5, position = "identity") +
-                 scale_fill_manual(values = c("0" = "darkred", "1" = "darkgreen")) +
+  scale_fill_manual(values = c("0" = "darkred", "1" = "darkgreen")) +
   geom_freqpoly(data = predictions, aes(x = rt, color = as.factor(accuracy), 
                                         y = after_stat(..count.. / sum(..count..))),
                 binwidth = 0.2, size = 1.5) +
-                scale_color_manual(values = c("0" = "darkred", "1" = "darkgreen")) +
+  scale_color_manual(values = c("0" = "darkred", "1" = "darkgreen")) +
   xlim(c(0,3)) +
   xlab('Decision reaction time') +
   ylab('Density') +
@@ -226,16 +226,16 @@ UpperLimit_EB <- c(5, 4, 1, 5)
 # Call the optimization function
 
 optimal_params_TB <- DEoptim(Iterate_fit_confidence_TB,  # Function to optimize
-                               lower = LowerLimit_TB,  # Lower limit of parameter values
-                               upper = UpperLimit_TB,  # Upper limit of parameter values
-                               control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                               observations, ntrials = 1000)
+                             lower = LowerLimit_TB,  # Lower limit of parameter values
+                             upper = UpperLimit_TB,  # Upper limit of parameter values
+                             control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
+                             observations, ntrials = 1000)
 
 optimal_params_EB <- DEoptim(Iterate_fit_confidence_EB,  # Function to optimize
-                               lower = LowerLimit_EB,  # Lower limit of parameter values
-                               upper = UpperLimit_EB,  # Upper limit of parameter values
-                               control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-                               observations, ntrials = 1000)
+                             lower = LowerLimit_EB,  # Lower limit of parameter values
+                             upper = UpperLimit_EB,  # Upper limit of parameter values
+                             control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
+                             observations, ntrials = 1000)
 
 
 # Model comparison --------------------------------------------------------
@@ -265,7 +265,7 @@ p1 <- ggplot() +
                  binwidth = 0.2, color = "black", alpha = 0.5, position = "identity") +
   scale_fill_manual(values = c("0" = "darkred", "1" = "darkgreen")) +
   geom_freqpoly(data = predictions_TB, aes(x = rt, color = as.factor(accuracy), 
-                                        y = after_stat(..count.. / sum(..count..))),
+                                           y = after_stat(..count.. / sum(..count..))),
                 binwidth = 0.2, size = 1.5) +
   scale_color_manual(values = c("0" = "darkred", "1" = "darkgreen")) +
   xlim(c(0,3)) +
@@ -279,7 +279,7 @@ p2 <- ggplot() +
                  binwidth = 0.2, color = "black", alpha = 0.5, position = "identity") +
   scale_fill_manual(values = c("0" = "darkblue", "1" = "darkorange")) +
   geom_freqpoly(data = predictions_TB, aes(x = rtconf, color = as.factor(accuracy), 
-                                        y = after_stat(..count.. / sum(..count..))),
+                                           y = after_stat(..count.. / sum(..count..))),
                 binwidth = 0.2, size = 1.5) +
   scale_color_manual(values = c("0" = "darkblue", "1" = "darkorange")) +
   xlim(c(0,3)) +
@@ -296,7 +296,7 @@ p3 <- ggplot() +
                  binwidth = 0.2, color = "black", alpha = 0.5, position = "identity") +
   scale_fill_manual(values = c("0" = "darkred", "1" = "darkgreen")) +
   geom_freqpoly(data = predictions_EB, aes(x = rt, color = as.factor(accuracy), 
-                                             y = after_stat(..count.. / sum(..count..))),
+                                           y = after_stat(..count.. / sum(..count..))),
                 binwidth = 0.2, size = 1.5) +
   scale_color_manual(values = c("0" = "darkred", "1" = "darkgreen")) +
   xlim(c(0,3)) +
@@ -310,7 +310,7 @@ p4 <- ggplot() +
                  binwidth = 0.2, color = "black", alpha = 0.5, position = "identity") +
   scale_fill_manual(values = c("0" = "darkblue", "1" = "darkorange")) +
   geom_freqpoly(data = predictions_EB, aes(x = rtconf, color = as.factor(accuracy), 
-                                             y = after_stat(..count.. / sum(..count..))),
+                                           y = after_stat(..count.. / sum(..count..))),
                 binwidth = 0.2, size = 1.5) +
   scale_color_manual(values = c("0" = "darkblue", "1" = "darkorange")) +
   xlim(c(0,3)) +
@@ -335,20 +335,13 @@ compute_BIC <- function(n_parameters, n_trials, cost){
 n_parameters_TB <- 4  # Number of free parameters (= number of independently estimated values in de model)
 n_trials_TB <- nrow(observations)  # Number of trials in observations
 cost_TB <- Cost_ddm_confidence(obs_RT = observations$rt, obs_acc = observations$accuracy, obs_RTconf = observations$rtconf, obs_cj = observations$cj,
-                                 pred_RT = predictions_TB$rt, pred_acc = predictions_TB$accuracy, pred_RTconf = predictions_TB$rtconf, pred_cj = predictions_TB$cj)
+                               pred_RT = predictions_TB$rt, pred_acc = predictions_TB$accuracy, pred_RTconf = predictions_TB$rtconf, pred_cj = predictions_TB$cj)
 
-<<<<<<< Updated upstream
-# Defining new model values
-n_parameters_new_model <- 4  # Number of free parameters
-n_trials_new_model <- nrow(observations)  # Number of trials in observations
-cost_new_model <- Cost_ddm_confidence(obs_RT = observations$rt, obs_acc = observations$accuracy, obs_RTconf = observations$rtconf, obs_cj = observations$cj,
-=======
 # Defining DDM_EB values necessary for computing BIC
 n_parameters_EB <- 4  # Number of free parameters
 n_trials_EB <- nrow(observations)  # Number of trials in observations
 cost_EB <- Cost_ddm_confidence(obs_RT = observations$rt, obs_acc = observations$accuracy, obs_RTconf = observations$rtconf, obs_cj = observations$cj,
->>>>>>> Stashed changes
-                                 pred_RT = predictions_new_model$rt, pred_acc = predictions_new_model$accuracy, pred_RTconf = predictions_new_model$rtconf, pred_cj = predictions_new_model$cj)
+                               pred_RT = predictions_new_model$rt, pred_acc = predictions_new_model$accuracy, pred_RTconf = predictions_new_model$rtconf, pred_cj = predictions_new_model$cj)
 
 # Compute BIC
 BIC_TB <- compute_BIC(n_parameters = n_parameters_TB, n_trials = n_trials_TB, cost = cost_TB)
