@@ -45,7 +45,7 @@ ter<-0.4 #non-decision time (seconds)
 
 ## have a look at the DDM_3params.cpp function to see how these parameters are 
 # used to create DVs, choice accuracy and reaction times
-# on line 54, you can see the formula used for evidence accumulation:
+# on line 50, you can see the formula used for evidence accumulation:
 # evidence = evidence + v * dt + s * sqrt(dt) * zigg.norm()
 
 # evidence is being added to the DV at every timestep (dt) with magnitude v. 
@@ -61,7 +61,7 @@ ter<-0.4 #non-decision time (seconds)
 # rate should have.Therefor, we are randomly deciding the "correct choice" for
 # each trial. Later, we will use the experimental design to inform the correct choice.
 
-# create "correct choice", random for now
+# create "correct choice" for 1000 trials, random for now
 CC <- sample(c(1,-1), 1000, replace = TRUE, prob = c(0.5,0.5))
 
 ## Let's now use the .cpp function to generate some data
@@ -78,6 +78,11 @@ Gen_Data$time[ ,1] = 0
 # have a look at the content of Gen_Data
 str(Gen_Data)
 
+# Gen_Data contains 3 variables, DVs, time & data (with columns RT and accuracy)
+# DVs and time are used to plot the evidence accumulation on a couple of trials
+# (see below). Data contains the predicted behaviour, reaction time (RT) and 
+# performance (accuracy).
+
 #------------------------------------------------------------------------------#
 ## plot a couple of DVs ##
 
@@ -85,7 +90,8 @@ str(Gen_Data)
 # is being made on a single trial
 
 # set this to the trials you would like to plot, note that we only keep the DVs 
-# of the first 21 trials to save memory.
+# of the first 21 trials to save memory. You can also plot all trials by setting 
+# this to c(1:21) but it might be a bit harder to see each trace.
 trials_toplot = c(3,4,7,15,18)
 
 # plot those trials and the boundary values
@@ -98,7 +104,7 @@ abline(h = -a, col = "red")
 
 # Q2 what does each DV have in common? When do they stop accumulating?
 
-# Q3 can you deduce for how many of these trials the choice was correct?
+# Q3 can you deduce for how many of these trials the participant chose to move right/left?
 
 # Q4 what was the (approximate) reaction time for each of the trials you plotted?
 
@@ -106,19 +112,19 @@ abline(h = -a, col = "red")
 ## plot behavioural results ##
 
 # when plotting the DVs, we can see a direct representation of the parameters on 
-# the decison being made on a single trial. But how do the parameters affect 
+# the decision being made on a single trial. But how do the parameters affect 
 # overall behaviour, such as accuracy or reaction time?
 
 # we are usually interested in the distribution of reaction times for the 
 # correct and incorrect choices. We use these distributions as a way to fit our 
-# predicted behaviour given some set of parameters to actual participant behaviour.
+# predicted behaviour (given some set of parameters) to actual participant behaviour.
 
 # let's look at the reaction time distributions of correct and incorrect choices.
 correct_fill_color <- adjustcolor("#2A9D8F", alpha.f = 0.25)
 error_fill_color <- adjustcolor("#E76F51", alpha.f = 0.25)
 df_observed <- data.frame(Gen_Data$Data)
 ggplot() +
-  geom_histogram(data = df_observed, aes(x = RT, y = ..count../nrow(df_observed), fill = as.factor(accuracy)),
+  geom_histogram(data = df_observed, aes(x = RT, y = ..count.., fill = as.factor(accuracy)),
                  binwidth = 0.05, color = "black", alpha = 0.5, position = "identity") +
   scale_fill_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct")) +
   scale_color_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct"))
@@ -181,6 +187,7 @@ par(mfrow = c(1,1))
 ## Q8 how does that affect behaviour (reaction times and accuracy)?
 
 ## Q9 what happens when you increase the drift rate while keeping the high boundary?
+# why do you think that happens?
 
 ## Q10 what happens if you decrease the non-decision time? How does that affect behaviour?
 
@@ -193,43 +200,40 @@ par(mfrow = c(1,1))
 # data we collected from participants, we need a way to quantify the difference 
 # between the distributions from generated and collected data.
 
-## have a look at the function "Cost_ddm" inside DDM_fit_functions_tutorial.R
-# and answer the questions.
+## we're going to have a look at the function "Cost_ddm" inside DDM_fit_functions_tutorial.R
 
-# this script computes 5 quantiles (containing a proportion of 0.1, 0.3, 0.5, 
-# 0.7 and 0.9 of reaction times) in the observed data and  then computes the 
-# probability of both a correct and incorrect choice within these quantiles.
-# The cost (or chi square) is then computed on line 45:
-
-# (obs_prop_cor - pred_prop_cor)^2 / pred_prop_cor + (obs_prop_incor - pred_prop_incor)^2 / pred_prop_incor
-
-# We call this the cost, because it computes how different the observed and estimated
-# distributions are, and this is what we'd like to reduce as much as possible. A
-# low cost means that the distributions are quite similair, and the parameters
-# used to generate the data are close to those that underlie the observed data.
-# therefor, when fitting a model, we always try to minimize the cost. That is
-# what we will do later when fitting the model to some data. For now, we are just
-# working on understanding the cost.
-
-# make the input variables to the function
+# First, we make the input variables to the function
 
 # how many trials should the estimated distribution have? This is typically more
 # than the observed trials, because that will create a smoother distribution. Let's
-# set it to 50000 (we originally simulated 1000 trials)
+# set it to 50000 (we originally simulated 1000 "observed" trials)
 n_est_trials = 50000
 
 # redefine "correct choice" variable
 CC <- sample(c(1,-1), n_est_trials, replace = TRUE, prob = c(0.5,0.5))
 
-Pred_Data <-DDM_3params(0.9,0.6,0.3,CC,ntrials=n_est_trials); # we predict the data is well described by these parameters
+Pred_Data <-DDM_3params(0.9,0.6,0.3,CC,ntrials = n_est_trials); # we predict the data is well described by these parameters
 obs_RT <- Gen_Data$Data[ ,1]
 obs_acc <- Gen_Data$Data[ ,2]
 pred_RT <- Pred_Data$Data[ ,1]
 pred_acc <- Pred_Data$Data[ ,2]
 plotting <- 1
 
-# now run the function Cost_ddm line by line
-cost <- Cost_ddm(obs_RT, obs_acc, pred_RT, pred_acc, plotting)
+# now run the function Cost_ddm line by line and answer the questions.
+
+#------------------------------------------------------------------------------#
+# Cost_ddm computes 5 quantiles (containing a proportion of 0.1, 0.3, 0.5, 
+# 0.7 and 0.9 of reaction times) in the observed data and  then computes the 
+# probability of both a correct and incorrect choice within these quantiles.
+# Then the cost (or chi square) is computed.
+
+# We call this the cost, because it computes how different the observed and predicted
+# distributions are, and this is what we'd like to reduce as much as possible. A
+# low cost means that the distributions are quite similar, and the parameters
+# used to generate the data are close to those that underlie the observed data.
+# therefor, when fitting a model, we always try to minimize the cost. That is
+# what we will do later when fitting the model to some data. For now, we are just
+# working on understanding the cost.
 
 # if you'd like to understand the cost function better, have a look at the 
 # Chi-Square Fitting Method described on page 9 of:
@@ -238,6 +242,7 @@ cost <- Cost_ddm(obs_RT, obs_acc, pred_RT, pred_acc, plotting)
 # model: Approaches to dealing with contaminant reaction times and parameter 
 # variability. Psychonomic Bulletin & Review, 9(3), 438–481. 
 # https://doi.org/10.3758/BF03196302
+
 
 #------------------------------------------------------------------------------#
 # to illustrate the use of the cost function, we will look at our "observed"
@@ -268,7 +273,11 @@ ggplot() +
   scale_color_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct")) +
   ggtitle(paste("Cost =", cost))
 
-## Q16 try to change the parameter values untill you get a low cost and a good
+# this figure shows our "observed" data that we generated at the beginning of the
+# tutorial in a histogram, and a line representing the prediction following
+# from the parameters you set. Does the line follow the data in the histogram?
+
+## Q16 try to change the parameter values until you get a low cost and a good
 # fit of the predicted data onto the original data (the lines should follow the
 # histogram distribution closely)
 
@@ -282,7 +291,7 @@ ggplot() +
 # instead we use an differential evolution optimization which finds the best 
 # fitting combination for us
 
-# have a look at the function Iterate_fit in DDM_fit_functions.R
+# have a look at the function Iterate_fit in DDM_fit_functions_tutorial.R
 # in this function, some data is generated using the inputted parameter values,
 # after which this predicted data is compared to the observed data we input to it.
 # the cost of this comparison is given as output.
@@ -309,6 +318,10 @@ optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
                           Gen_Data$Data, CC, ntrials = n_est_trials)
 
+# the output printed to the console represents the iteration (how many times the
+# algorithm has tried different parameter values), the cost associated with this
+# iteration, and the 3 parameter values it used in this iteration (v, a, ter).
+
 ## look at the optimal parameters the fit function finds back:
 summary(optimal_params)
 
@@ -317,12 +330,13 @@ summary(optimal_params)
 # Did the fitting procedure find back similar parameter values?
 
 # Note that this assumes  you never overwrote Gen_Data using different parameter 
-# values, if you did you should compare the optimal parameters to those values.
+# values, if you did you can rerun line 36-74 before running the optimization.
 
 #------------------------------------------------------------------------------#
 ## let's look at how predicted data from these optimal parameters compares to 
 # our original data ##
 
+# generate data using the optimal parameter values from our fitting procedure
 Pred_Data <- DDM_3params(optimal_params$optim$bestmem[1], optimal_params$optim$bestmem[2], optimal_params$optim$bestmem[3], CC, ntrials = n_est_trials)
 colnames(Pred_Data$Data) <- c("RT", "accuracy")
 cost <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2], 0)
@@ -345,7 +359,9 @@ ggplot() +
 #------------------------------------------------------------------------------#
 # We seem to be able to find back  the generative parameter values we created 
 # this data with. But how about fitting the model to behavioural data for which 
-# we don't know the parameter values yet?
+# we don't know the parameter values yet? Here, we will do the fitting procedure
+# on some real data. You can use data your brought, or data we provided (to be 
+# found in the repository with the code)
 
 # load your data 
 
@@ -355,10 +371,14 @@ data <- read.csv("DDM_data.csv")
 
 # set your data in a format that our function expects (two columns, one with 
 # reaction time in seconds and one with accuracy in 0/1 coding)
+# below we do this for the example dataset, but you should write it yourself
+# for your own data
 D <- data.frame(data)
 names(D)[names(D) == "rt"] <- "RT"
 
-# make sure only the two columns exist in variable Observations
+# create a new variable names observations which has only the RT and accuracy column
+# (so no confidence or stimulus information) for the optimization. Again, write this
+# yourself for your own data.
 observations <- matrix(nrow = length(D$RT), ncol = 2)
 observations[,1] <- D$RT
 observations[,2] <- D$accuracy
@@ -366,16 +386,16 @@ observations[,2] <- D$accuracy
 # make a behavioral plot showing the reaction time distributions of correct and incorrect trials
 df_observed <- D
 ggplot() +
-  geom_histogram(data = df_observed, aes(x = RT, y = ..count../nrow(df_observed), fill = as.factor(accuracy)),
+  geom_histogram(data = df_observed, aes(x = RT, y = ..count.., fill = as.factor(accuracy)),
                  binwidth = 0.05, color = "black", alpha = 0.5, position = "identity") +
   scale_fill_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct")) +
   scale_color_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct"))
 
-# note that in the current model, we set the drift rate to positive or negative
+# note that up to now, we set the drift rate to positive or negative
 # at random, because we do not have an actual correct boundary.Now that you have
 # real data, there is a correct answer, and the drift rate should reflect this.
 # Define CC here as the correct answer, the direction the dots were really going
-# in if you use our example data or data with an RDM stimulus.
+# in if you use our example data or other data with an RDM stimulus.
 
 # define the correct choice variable
 CC_chr <- D$correct_response
@@ -406,8 +426,9 @@ summary(optimal_params)
 # in experiments, we sometimes see that participants have a preference for one
 # choice over the other, regardless of the sensory input they receive. This results
 # in a bias, where they choose one option more often than the other over an entire
-# block or whole experiment.
-# a drift-diffusion model can have an additional parameter that account for this 
+# block or whole experiment. This bias can not be captured by the 3 parameters we
+# used until now.
+# a drift-diffusion model can have an additional parameter that accounts for this 
 # bias, it's called the starting point. As you might imagine from its name, the 
 # starting point affects where the accumulation starts. Now, the accumulation 
 # always started from zero, but it can also start closer to either the upper or
@@ -440,7 +461,7 @@ z <- -0.3 #starting point
 CC <- sample(c(1,-1), 1000, replace = TRUE, prob = c(0.5,0.5))
 
 # generate data
-Gen_Data<-DDM_4params(v,a,ter,CC,z)
+Gen_Data<-DDM_4params(v,a,ter,CC,z)  # make sure the order of the inputs matches how you wrote it in your function
 colnames(Gen_Data$Data) <- c("RT", "accuracy")
 
 # replace zeros in DV and time with NA
@@ -458,23 +479,31 @@ abline(h = -a, col = "red")
 ## Q22 what do you notice about the DVs when trying different values of the starting
 # point variable? Does your model work as expected?
 
-# #------------------------------------------------------------------------------#
-# ## see if we can recover the starting point parameter ##
-# 
-# # create "correct choice", random for now
-# CC <- sample(c(1,-1), 1000, replace = TRUE, prob = c(0.5,0.5))
-# 
-# # run the optimization algorithm with your own data
-# L<- c(0,0,0,-1)
-# U<- c(3,4,1,1) # drift rate, boundary, non-decision time (seconds)
-# 
-# ## now fit the best parameters using the optimization function
-# optimal_params <- DEoptim(Iterate_fit_4params,  # Function to optimize
-#                           lower = L,  
-#                           upper = U,
-#                           control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
-#                           observations, CC)
-# 
-# # look at the optimal parameters to describe your data
-# summary(optimal_params)
+#------------------------------------------------------------------------------#
+## Now, let's see if we can recover the starting point parameter ##
+# after generating data, we can see if our optimization algorithm and cost function
+# also finds back the correct value for our starting point parameter.
 
+# create "correct choice", random for now
+CC <- sample(c(1,-1), 1000, replace = TRUE, prob = c(0.5,0.5))
+
+# make sure to set the upper and lower limit of your starting point parameter so 
+# the algorithm knows where to search
+L<- c(0,0,0,-1)
+U<- c(3,4,1,1) # drift rate, boundary, non-decision time (seconds)
+
+## now fit the best parameters using the optimization function
+optimal_params <- DEoptim(Iterate_fit_4params,  # Function to optimize
+                          lower = L,
+                          upper = U,
+                          control = c(itermax = 1000, strategy = 2, steptol = 50, reltol = 1e-8),
+                          Gen_Data$Data, CC)
+
+# look at the optimal parameters to describe your data
+summary(optimal_params)
+
+## Q23 did the optimization algorithm find your starting point parameter back?
+# how about the other parameters? 
+
+## Q24 If you run the optimization multiple times, does the starting point 
+# parameter always have the same sign? Why do you think that is?
