@@ -391,6 +391,7 @@ ggplot() +
   scale_fill_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct")) +
   scale_color_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct"))
 
+#------------------------------------------------------------------------------#
 # note that up to now, we set the drift rate to positive or negative
 # at random, because we do not have an actual correct boundary.Now that you have
 # real data, there is a correct answer, and the drift rate should reflect this.
@@ -417,11 +418,38 @@ optimal_params <- DEoptim(Iterate_fit,  # Function to optimize
 # look at the optimal parameters to describe your data
 summary(optimal_params)
 
-## Q20 How do these parameters compare to the ones we used to generate data for
+#------------------------------------------------------------------------------#
+## now plot the prediction from the optimal parameters over the observed data ##
+
+# generate data using the optimal parameter values from our fitting procedure
+CC <- sample(c(1,-1), n_est_trials, replace = TRUE, prob = c(0.5,0.5))
+Pred_Data <- DDM_3params(optimal_params$optim$bestmem[1], optimal_params$optim$bestmem[2], optimal_params$optim$bestmem[3], CC, ntrials = n_est_trials)
+colnames(Pred_Data$Data) <- c("RT", "accuracy")
+cost <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2], 0)
+
+# plot the original data & prediction following from the optimal parameters
+df_predicted <- data.frame(Pred_Data$Data)
+ggplot() +
+  geom_histogram(data = df_observed, aes(x = RT, y = ..count../nrow(df_observed), fill = as.factor(accuracy)),
+                 binwidth = 0.05, color = "black", alpha = 0.5, position = "identity") +
+  geom_freqpoly(data = df_predicted, aes(x = RT, y = ..count../nrow(df_predicted), color = as.factor(accuracy)),
+                binwidth = 0.05, linewidth = 1, alpha = 1, inherit.aes = FALSE) + 
+  scale_fill_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct")) +  
+  scale_color_manual(name = "Accuracy", values = c(error_fill_color, correct_fill_color), labels = c("Incorrect", "Correct")) +
+  ggtitle(paste("Cost =", cost))
+
+## Q20 How do the parameters values compare to the ones we used to generate data for
 # the tutorial? What do you think could cause this difference?
+# what do you think of the fit between the observed data and the predictions
+# following our optimal parameters? Do you think fitting real data works as well
+# as fitting generated data?
+#------------------------------------------------------------------------------#
+#------------------------------------------------------------------------------#
 
 #------------------------------------------------------------------------------#
 ## extra assignment for if you have time: adding a parameter to the model ##
+#------------------------------------------------------------------------------#
+
 # currently, the model has 3 parameters: drift rate, boundary & non-decision time
 # in experiments, we sometimes see that participants have a preference for one
 # choice over the other, regardless of the sensory input they receive. This results
