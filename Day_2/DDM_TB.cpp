@@ -5,7 +5,7 @@ using namespace Rcpp;
 static Ziggurat::Ziggurat::Ziggurat zigg;
 
 // [[Rcpp::export]]
-NumericMatrix DDM_2DSD(double v, double a, double ter, double tau, int ntrials = 10000, double s = 1, double dt = 0.01) { 
+NumericMatrix DDM_TB(double v, double a, double ter, double tau, int ntrials = 10000, double s = 1, double dt = 0.01) { 
   
   // v: drift rate
   // a: bound

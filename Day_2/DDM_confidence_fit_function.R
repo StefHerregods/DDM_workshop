@@ -128,11 +128,8 @@ Cost_ddm_confidence <- function(obs_RT, obs_acc, obs_RTconf, obs_cj, pred_RT, pr
   
   # get chi-square measure as cost
   
-  # compute chi square using both correct and incorrect trials
+  # compute chi square using correct and incorrect, high and low confidence trials
   Chi_square <- sum(c((obs_prop_cor - pred_prop_cor)^2 / pred_prop_cor, (obs_prop_incor - pred_prop_incor)^2 / pred_prop_incor, (obs_prop_highCJ - pred_prop_highCJ)^2 / pred_prop_highCJ, (obs_prop_lowCJ - pred_prop_lowCJ)^2 / pred_prop_lowCJ), na.rm=TRUE)
-
-  # Q15 how would the chi-square change if the number of (in)correct trials in 
-  # a quantile become more similar?
   
   return(Chi_square)
 }
