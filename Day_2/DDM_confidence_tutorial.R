@@ -324,9 +324,9 @@ cost_2DSD <- Cost_ddm_confidence(obs_RT = observations$rt, obs_acc = observation
                                  pred_RT = predictions_2DSD$rt, pred_acc = predictions_2DSD$accuracy, pred_RTconf = predictions_2DSD$rtconf, pred_cj = predictions_2DSD$cj)
 
 # Defining new model values
-n_parameters_2DSD <- 4  # Number of free parameters
-n_trials_2DSD <- nrow(observations)  # Number of trials in observations
-cost_2DSD <- Cost_ddm_confidence(obs_RT = observations$rt, obs_acc = observations$accuracy, obs_RTconf = observations$rtconf, obs_cj = observations$cj,
+n_parameters_new_model <- 4  # Number of free parameters
+n_trials_new_model <- nrow(observations)  # Number of trials in observations
+cost_new_model <- Cost_ddm_confidence(obs_RT = observations$rt, obs_acc = observations$accuracy, obs_RTconf = observations$rtconf, obs_cj = observations$cj,
                                  pred_RT = predictions_new_model$rt, pred_acc = predictions_new_model$accuracy, pred_RTconf = predictions_new_model$rtconf, pred_cj = predictions_new_model$cj)
 
 # Compute BIC
