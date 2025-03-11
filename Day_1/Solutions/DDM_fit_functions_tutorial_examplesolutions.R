@@ -56,7 +56,7 @@ Cost_ddm <- function(obs_RT, obs_acc, pred_RT, pred_acc, plotting){
   obs_prop_cor <- diff(c(0,C_prob(quantiles_cor),1)) * length(obs_RT[obs_acc == 1]) # sample proportion of probability distribution within quantiles
 
   C_prob <- ecdf(obs_RT[obs_acc == 0]) # same for observed incorrect
-  obs_prop_incor <- diff(c(0,C_prob(quantiles_cor),1)) * length(obs_RT[obs_acc == 0])
+  obs_prop_incor <- diff(c(0,C_prob(quantiles_incor),1)) * length(obs_RT[obs_acc == 0])
 
   # for predicted data (note that because these data are generated, we sometimes 
   # have very little (in)correct trials, which we have to account for by setting 
@@ -72,7 +72,7 @@ Cost_ddm <- function(obs_RT, obs_acc, pred_RT, pred_acc, plotting){
 
   if(sum(pred_acc == 0) > 5){
   C_prob <- ecdf(pred_RT[pred_acc == 0]) 
-  pred_prop_incor <- diff(c(0,C_prob(quantiles_cor),1)) * length(pred_RT[pred_acc == 0])
+  pred_prop_incor <- diff(c(0,C_prob(quantiles_incor),1)) * length(pred_RT[pred_acc == 0])
   } else{ # less than 5 errors: no quantiles possible
     pred_prop_incor <- c(0,0,0,0,0)}
   
