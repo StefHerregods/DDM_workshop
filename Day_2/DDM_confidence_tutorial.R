@@ -17,33 +17,53 @@ observations <- read.csv('DDM_data.csv')  # Replace with your own observations
 # (confidence reaction time), and cj (binary confidence judgments; 1 or 0)
 
 sourceCpp('DDM_TB.cpp')  # Contains model with time-based stopping rule
+sourceCpp('DDM_TB_saveDV.cpp')  # Contains model with time-based stopping rule
 
 
 # Time-based stopping rule ------------------------------------------------
 
-# First, get some insight into the parameters of a model with time-based 
-# stopping rule for confidence judgments (also known as the 2DSD model). 
+# First, get some insight into the parameters of a model with time-based
+# stopping rule for confidence judgments (also known as the 2DSD model).
 # The model has four free parameters:
 
 v <- 0.8  # Drift rate
 a <- 0.75  # Decision bound
 ter <- 0.4  # Non-decision time (in seconds)
 tau <- 1  # Interjudgment time (in seconds)
-# = time between making a decision and confidence judgment
+          # = time between making a decision and confidence judgment
 
 # Try out a few combinations of parameters. Use the functions below to simulate
 # and plot results.
 
-DDM_TB(...)
-plot; color code left right
+predictions <- DDM_TB_saveDV(v,a,ter,tau)
+colnames(predictions$Data) <- c("rt", "choice", "accuracy", "rtconf", "cj")
+predictions$DVs[predictions$Dvs == 0] <- NA
+predictions$time[predictions$time == 0] <- NA
+predictions$time[ ,1] = 0 # # replace first zero, which is actually time
+# plot trials with color coding for left/right decision
 
-ggplot(data = predictions, aes(x = time, y = evidence))
+plot(t(predictions$time[which(predictions$Data[c(1:6),2] == -1), ]), t(predictions$DV[which(predictions$Data[c(1:6),2] == -1), ]),
+     type ="l", col = "blue",
+     ylim = c(-a-2,a+2), xlab = 'Time (s)', ylab = 'Decision variable')
+lines(t(predictions$time[which(predictions$Data[c(1:6),2] == 1), ]), t(predictions$DV[which(predictions$Data[c(1:6),2] == 1), ]),
+      type ="l", col = "green",)
+abline(h = a, col = "red")
+abline(h = -a, col = "red")
+legend(x = 0, y = 3, legend = c("lower boundary", "upper boundary"), col = c("blue", "green"), lty = 1)
 
-# [Q1]  The confidence judgment on each trial depends on the accumulated 
-#       post-decision evidence. Can you see how continuous post-decision 
+# [Q1]  The confidence judgment on each trial depends on the accumulated
+#       post-decision evidence. Can you see how continuous post-decision
 #       evidence is split into binary confidence judgments in the plot below?
 
-ggplot
+# plot trials with color coding for low/high confidence
+plot(t(predictions$time[which(predictions$Data[c(1:6),5] == 1), ]), t(predictions$DV[which(predictions$Data[c(1:6),5] == 1), ]),
+     type ="l", col = "blue",
+     ylim = c(-a-2,a+2), xlab = 'Time (s)', ylab = 'Decision variable')
+lines(t(predictions$time[which(predictions$Data[c(1:6),5] == 0), ]), t(predictions$DV[which(predictions$Data[c(1:6),5] == 0), ]),
+      type ="l", col = "green",)
+abline(h = a, col = "red")
+abline(h = -a, col = "red")
+legend(x = 0, y = 3, legend = c("high confidence", "low confidence"), col = c("blue", "green"), lty = 1)
 
 # [Q2]  Take a look at the model fit. Plot decision reaction time histograms of 
 #       your observations with overlapping model predictions. Can you find a set 
