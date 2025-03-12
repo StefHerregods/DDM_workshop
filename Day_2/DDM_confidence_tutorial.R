@@ -43,13 +43,13 @@ predictions$time[ ,1] = 0 # # replace first zero, which is actually time
 # plot trials with color coding for left/right decision
 
 plot(t(predictions$time[which(predictions$Data[c(1:6),2] == -1), ]), t(predictions$DV[which(predictions$Data[c(1:6),2] == -1), ]),
-     type ="l", col = "blue",
+     type ="l", col = "purple",
      ylim = c(-a-2,a+2), xlab = 'Time (s)', ylab = 'Decision variable')
 lines(t(predictions$time[which(predictions$Data[c(1:6),2] == 1), ]), t(predictions$DV[which(predictions$Data[c(1:6),2] == 1), ]),
       type ="l", col = "green",)
 abline(h = a, col = "red")
 abline(h = -a, col = "red")
-legend(x = 0, y = 3, legend = c("lower boundary", "upper boundary"), col = c("blue", "green"), lty = 1)
+legend(x = 0, y = 3, legend = c("lower boundary", "upper boundary"), col = c("purple", "green"), lty = 1)
 
 # [Q1]  The confidence judgment on each trial depends on the accumulated
 #       post-decision evidence. Can you see how continuous post-decision
@@ -57,13 +57,13 @@ legend(x = 0, y = 3, legend = c("lower boundary", "upper boundary"), col = c("bl
 
 # plot trials with color coding for low/high confidence
 plot(t(predictions$time[which(predictions$Data[c(1:6),5] == 1), ]), t(predictions$DV[which(predictions$Data[c(1:6),5] == 1), ]),
-     type ="l", col = "blue",
+     type ="l", col = "orange",
      ylim = c(-a-2,a+2), xlab = 'Time (s)', ylab = 'Decision variable')
 lines(t(predictions$time[which(predictions$Data[c(1:6),5] == 0), ]), t(predictions$DV[which(predictions$Data[c(1:6),5] == 0), ]),
-      type ="l", col = "green",)
+      type ="l", col = "blue",)
 abline(h = a, col = "red")
 abline(h = -a, col = "red")
-legend(x = 0, y = 3, legend = c("high confidence", "low confidence"), col = c("blue", "green"), lty = 1)
+legend(x = 0, y = 3, legend = c("high confidence", "low confidence"), col = c("orange", "blue"), lty = 1)
 
 # [Q2]  Take a look at the model fit. Plot decision reaction time histograms of 
 #       your observations with overlapping model predictions. Can you find a set 
