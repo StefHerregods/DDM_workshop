@@ -276,7 +276,7 @@ print(params_EB)
 predictions_TB <- data.frame(DDM_TB(v=params_TB['v'], a=params_TB['a'], ter=params_TB['ter'], tau=params_TB['tau'])) 
 names(predictions_TB) <- c('rt', 'accuracy', 'rtconf', 'cj')  # decision RT, accuracy, confidence RT, confidence judgment
 
-predictions_EB <- data.frame(DDM_EB(v=params_new_model['v'], a=params_new_model['a'], ter=params_new_model['ter'], a2=params_new_model['a2']))  
+predictions_EB <- data.frame(DDM_EB(v=params_EB['v'], a=params_EB['a'], ter=params_EB['ter'], a2=params_EB['a2']))  
 names(predictions_EB) <- c('rt', 'accuracy', 'rtconf', 'cj')  # decision RT, accuracy, confidence RT, confidence judgment
 
 p1 <- ggplot() +
@@ -361,10 +361,10 @@ cost_TB <- Cost_ddm_confidence(obs_RT = observations$rt, obs_acc = observations$
 n_parameters_EB <- 4  # Number of free parameters
 n_trials_EB <- nrow(observations)  # Number of trials in observations
 cost_EB <- Cost_ddm_confidence(obs_RT = observations$rt, obs_acc = observations$accuracy, obs_RTconf = observations$rtconf, obs_cj = observations$cj,
-                               pred_RT = predictions_new_model$rt, pred_acc = predictions_new_model$accuracy, pred_RTconf = predictions_new_model$rtconf, pred_cj = predictions_new_model$cj)
+                               pred_RT = predictions_EB$rt, pred_acc = predictions_EB$accuracy, pred_RTconf = predictions_EB$rtconf, pred_cj = predictions_EB$cj)
 
 # Compute BIC
 BIC_TB <- compute_BIC(n_parameters = n_parameters_TB, n_trials = n_trials_TB, cost = cost_TB)
-BIC_new_model <- compute_BIC(n_parameters = n_parameters_new_model, n_trials = n_trials_new_model, cost = cost_new_model)
+BIC_EB <- compute_BIC(n_parameters = n_parameters_EB, n_trials = n_trials_EB, cost = cost_EB)
 print(paste("The model BICs are:", "DDM_TB =", round(BIC_TB,2), "and DDM_EB =", round(BIC_EB,2)))
 
