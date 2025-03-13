@@ -425,7 +425,7 @@ summary(optimal_params)
 CC <- sample(c(1,-1), n_est_trials, replace = TRUE, prob = c(0.5,0.5))
 Pred_Data <- DDM_3params(optimal_params$optim$bestmem[1], optimal_params$optim$bestmem[2], optimal_params$optim$bestmem[3], CC, ntrials = n_est_trials)
 colnames(Pred_Data$Data) <- c("RT", "accuracy")
-cost <- Cost_ddm(D$RT, D$accuracy, Pred_Data$Data[ ,1], Pred_Data$Data[ ,2], 0)
+cost <- Cost_ddm(Gen_Data$Data[ ,1], Gen_Data$Data[ ,2], Pred_Data$Data[ ,1], Pred_Data$Data[ ,2], 0)
 
 # plot the original data & prediction following from the optimal parameters
 df_predicted <- data.frame(Pred_Data$Data)
